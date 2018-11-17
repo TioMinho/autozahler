@@ -1,0 +1,1 @@
+console.log("Arquivos de script Javascript para a interface")
