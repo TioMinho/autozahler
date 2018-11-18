@@ -1,1 +1,0 @@
-print("Arquivo Principal: Index Flask da Interface")
