@@ -9,6 +9,7 @@ app.config['UPLOAD_FOLDER'] = settings.UPLOAD_FOLDER
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
+	'''código retirado de http://flask.pocoo.org/docs/1.0/patterns/fileuploads/'''
 	if request.method == 'POST':
 		# check if the post request has the file part
 		if 'file' not in request.files:
