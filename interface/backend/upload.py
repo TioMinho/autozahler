@@ -20,7 +20,6 @@ def file(upload_folder):
 		if file and util.allowed_file_format(file.filename):
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(upload_folder, filename))
-			return redirect(url_for('upload_successful',
-									filename=filename))
+			return redirect('statistics')
 
 	return render_template('index.html')
