@@ -1,19 +1,10 @@
-from flask import Flask, flash, request, redirect, url_for
+import os
+from flask import flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 
 from . import util
 
-HTML_DA_PAGINA =  '''
-	<!doctype html>
-	<title>Upload new File</title>
-	<h1>Upload new File</h1>
-	<form method=post enctype=multipart/form-data>
-	  <input type=file name=file>
-	  <input type=submit value=Upload>
-	</form>
-	'''
-
-def file():
+def file(upload_folder):
 	'''código retirado de http://flask.pocoo.org/docs/1.0/patterns/fileuploads/'''
 	if request.method == 'POST':
 		# check if the post request has the file part
@@ -26,10 +17,10 @@ def file():
 		if file.filename == '':
 			flash('No selected file')
 			return redirect(request.url)
-		if file and allowed_file_format(file.filename):
+		if file and util.allowed_file_format(file.filename):
 			filename = secure_filename(file.filename)
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			file.save(os.path.join(upload_folder, filename))
 			return redirect(url_for('upload_successful',
 									filename=filename))
 
-	return HTML_DA_PAGINA
+	return render_template('index.html')

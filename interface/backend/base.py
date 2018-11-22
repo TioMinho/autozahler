@@ -1,6 +1,6 @@
-import os
-from ... import settings
+from flask import Flask
 
+from ... import settings
 from . import upload
 
 app = Flask(settings.application_name)
@@ -9,8 +9,10 @@ app.config['UPLOAD_FOLDER'] = settings.UPLOAD_FOLDER
 
 #Bloco de associação de paths com suas respectivas paginas/funções
 
+@app.route('/index')
 @app.route('/', methods=['GET', 'POST'])
-upload.file()
+def index():
+	return upload.file(settings.UPLOAD_FOLDER)
 
 @app.route('/upload_successful')
 def upload_successful():
