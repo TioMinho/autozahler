@@ -2,7 +2,7 @@
 <html>
 <meta charset="utf-8">
 <head>
-	<img src="./assets/logo_autozahler_index.png">
+	<img src="{{ url_for('static', filename="assets/logo_autozahler_index.png") }}">
 </head>
 <script type="text/javascript" src="index.js"></script>
 <body>
@@ -10,7 +10,10 @@
 		<img src="">
 	</div>
 	<div>
-		<input id="upload_video" type="file" name="video">
+		<form method=post enctype=multipart/form-data>
+		  <input type=file name=file>
+		  <input type=submit value=Upload>
+		</form>
 	</div>
 	<div>
 		<h1>Projeto</h1>
