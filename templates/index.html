@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Autozähler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" media="screen" href="../static/css/style.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 nopad">
+                <img src="../static/assets/logo_autozahler_statistics.png"/>
+                <div id="box-video" class="background-striped">
+                    <div id="video-content">
+							<video width="100%" height="100%" controls>
+									<source src="../static/video-test/movie.mp4" type="video/mp4">
+								  Your browser does not support the video tag.
+							</video>
+					</div>
+                </div>
+                <div class="col-md-12 nopadlr buttons">
+					<div class="col-md-8">
+							<a id="btn-back" class="button-primary button-back" href="home.html">
+								<i class="icon-back flaticon-lg flaticon-056-left-arrow-1"></i> Voltar
+							</a>
+					</div>
+					<div class="col-md-4 nopad">
+							<a id="btn-download" class="button-primary button-down"  href="home.html">
+								Baixar Análise <i class="icon-down flaticon-lg flaticon-070-down-arrow"></i>
+							</a>
+					</div>
+                </div>
+            </div>
+            <div class="col-md-6 nopad">
+                <div class="col-md-12 nopad display-label-default">
+                    <label class="label-primary pull-right">Resultado da Análise</label>
+                </div>
+                <div class="col-md-6 nopad">
+                        <div class="col-md-9 nopad">
+                            <label class="label-default">Informações do Arquivo</label>
+                        </div>    
+                        <div class="box-infos">
+                            Nome: Meuarquivodevideoparaanalise<br/>
+                            Formato: AVI<br/>
+                            Duração: 10m48s<br/>
+                            Resolução: 352 x 288 pixels<br/>
+                            Profundidade de cores: 8 bits<br/>
+                            Taxa de Quadros: 30 FPS
+                        </div>
+                        <div class="col-md-9 nopad">
+                            <label class="label-default">Tráfego de Veículos</label>
+                        </div>
+                        <table id=table-trafego>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Médio</th>
+                                    <th>Pico</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Leves</td>
+                                    <td>2.96/minuto</td>
+                                    <td>2.96/minuto</td>
+                                </tr>
+                                <tr>
+                                    <td>Passeio</td>
+                                    <td>2.96/minuto</td>
+                                    <td>2.96/minuto</td>
+                                </tr>
+                                <tr>
+                                    <td>Pesados</td>
+                                    <td>2.96/minuto</td>
+                                    <td>2.96/minuto</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="col-md-9 nopad">
+                            <label class="label-default">Linha do Tempo</label>
+                        </div>
+                    </div>
+            </div>
+        </div>  
+    </div>
+</body>
+</html>
