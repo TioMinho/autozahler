@@ -37,6 +37,11 @@ var valueline2 = d3.line()
     .x(function(d) { return x(d.date); })
     .y(function(d) { return y(d.open); });
 
+// define the 3nd line
+var valueline3 = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.terc); });
+
 // append the svg obgect to the body of the page
 // appends a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
@@ -56,6 +61,7 @@ d3.csv("data2.csv", function(error, data) {
       d.date = parseTime(d.date);
       d.close = +d.close;
       d.open = +d.open;
+      d.terc = +d.terc;
   });
 
   // Scale the range of the data
@@ -75,6 +81,13 @@ d3.csv("data2.csv", function(error, data) {
       .attr("class", "line")
       .style("stroke", "red")
       .attr("d", valueline2);
+
+  // Add the valueline3 path.
+  svg.append("path")
+      .data([data])
+      .attr("class", "line")
+      .style("stroke", "green")
+      .attr("d", valueline3);
 
   // Add the X Axis
   svg.append("g")
