@@ -17,9 +17,10 @@ def file(upload_folder):
 		if file.filename == '':
 			flash('No selected file')
 			return redirect(request.url)
+		print(file.filename)
 		if file and util.allowed_file_format(file.filename):
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(upload_folder, filename))
 			return redirect('statistics')
 
-	return render_template('index.html')
+	return render_template('home.html')
