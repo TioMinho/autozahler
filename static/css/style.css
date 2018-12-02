@@ -11,7 +11,8 @@
 body {
 	margin-bottom: 20px;
 	overflow-x: hidden;
-	
+	font-family: 'CaviarDreams';
+	font-size: 1.0em;	
 }
 
 .container {
@@ -19,6 +20,10 @@ body {
 	font-size: 1.0em;
 	background-color: #ffffff;
 	margin-top: 50px;
+}
+
+.row {
+	margin: 0px;
 }
 
 .label-primary {
