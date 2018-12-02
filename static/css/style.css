@@ -194,11 +194,25 @@ body {
 	margin-top: 20px;
 	color: #ffffff;
 	background-color: #00719d;
-	clip-path: polygon(0 0%, 40% 0%, 38% 100%, 0% 100%);	
-	padding: 5px 0px 5px 0px;		
+	clip-path: polygon(0% 0%, 55% 0%, 50% 100%, 0% 100%);	
+	padding: 5px 5px 5px 5px;		
+}
+
+#pre-processing {
+	margin-bottom: 10%;
+}
+
+.coluna {
+	width: 50%;
+	float: left;
 }
 
 .equipe {
-	float: left;
-	width: 50%;
+	font-family: 'CaviarDreams';
+}
+
+#logo_auto {
+	width: auto;
+	height: auto;
+	max-width: 100%;
 }
