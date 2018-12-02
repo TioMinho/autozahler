@@ -27,7 +27,7 @@ class MyVehicle:
     def timedOut(self):
         return self.done
     
-    def going_DOWN(self, mid_start, mid_end):
+    def crossed_line(self, mid_start, mid_end):
         if len(self.tracks) >= 2:
             if self.state == '0':
                 if self.tracks[-1][0] > mid_start and self.tracks[-2][0] <= mid_start:

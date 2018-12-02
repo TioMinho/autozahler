@@ -14,6 +14,8 @@ def preProc (img, maskSize, backgroundSubtractor):
 	cv2.imshow("Img - Original", img)
 	
 	#Equalização de Histograma
+	# clahe = cv2.createCLAHE(clipLimit=100, tileGridSize=(maskSize, maskSize))
+	# img = clahe.apply(img)
 	img = cv2.equalizeHist(img)
 	cv2.imshow("Equalizacao de Histograma", img)
 	
@@ -30,7 +32,7 @@ def preProc (img, maskSize, backgroundSubtractor):
 	cv2.imshow("Remocao de Ruido aleatorio", img)
    
 	# Filtro da mediana
-	img = cv2.medianBlur(img,maskSize)
+	img = cv2.medianBlur(img, maskSize)
 	cv2.imshow("Filtro da mediana", img)
 	
 	# Binariza a Imagem Final
@@ -71,22 +73,19 @@ def main():
 	print()
 
 	# Linhas de Limite para Contagem
-	line_left 		= int(7  * (img_width/100))
-	line_left_limit = int(8 * (img_width/100))
-
-	line_right 		 = int(55 * (img_width/100))
-	line_right_limit = int(80 * (img_width/100))
+	line_left 		= int(36  * (img_width/100))
+	line_right 		= int(70 * (img_width/100))
 
 	line_right_color = (255, 0,   0)
 	line_left_color  = (  0, 0, 255)
 	
 	print("###### LINHAS DE LIMITE ######")
-	print("Linha de Passagem (Direita): {0} - {1}".format(line_right, line_right_limit))
-	print("Linha de Passagem (Esquerda): {0} - {1}".format(line_left, line_left_limit))
+	print("Linha de Passagem (Esquerda): {0}".format(line_left))
+	print("Linha de Passagem (Direita): {0}".format(line_right))
 	print()
 
 	# Create the background subtractor
-	rfmg2 = cv2.createBackgroundSubtractorMOG2(detectShadows=True)
+	rfmg2 = cv2.createBackgroundSubtractorMOG2()
 
 	# Variables
 	font = cv2.FONT_HERSHEY_SIMPLEX
@@ -112,9 +111,7 @@ def main():
 		## PREPROCESSING ##
 		###################
 		gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		cv2.imshow("Gray - Original", gray_image)
-		
-		mask = preProc(gray_image, 11, rfmg2)
+		mask = preProc(gray_image, 7, rfmg2)
 		
 		##################
 		## FIND CONTOUR ##
@@ -135,14 +132,17 @@ def main():
 				cy = int(M['m01']/M['m00'])
 				
 				x, y, w, h = cv2.boundingRect(cnt)
-
+				
+				roi = gray_image[y:y+h, x:x+w]
+				cv2.imshow('Region of Interest 2', roi)
+	
 				new = True
 				for i in vehicles:
 					if abs(x - i.x) <= w and abs(y - i.y) <= h:
 						new = False
 						i.updateCoords(cx, cy)
 						
-						if i.going_DOWN(line_right, line_right_limit):
+						if i.crossed_line(line_right, line_right+10):
 							if(w >= 100):
 								if(h >= 70):
 									print("{2} - CARRO GRANDE MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
@@ -162,7 +162,7 @@ def main():
 
 							if(w >= 20):
 								roi = gray_image[y:y+h, x:x+w]
-								cv2.imshow('Region of Interest', roi)
+								cv2.imshow('Region of Interest 2', roi)
 
 								cnt_total += 1
 						break
@@ -175,7 +175,7 @@ def main():
 						vehicles.pop(index)
 						del i
 
-				if new == True:
+				if new == True and cx >= line_left:
 					p = Vehicle.MyVehicle(pid, cx, cy, max_p_age)
 					vehicles.append(p)
 					pid += 1
@@ -195,7 +195,7 @@ def main():
 		str_grande 	= 'grande:' + str(cnt_grande)
 		
 		frame = cv2.line(gray_image, (line_right, 0), (line_right, img_height), (255, 0, 0), 1)
-		frame = cv2.line(gray_image, (line_right_limit, 0), (line_right_limit, img_height), (255, 0, 0), 1)
+		frame = cv2.line(gray_image, (line_left, 0), (line_left, img_height), (255, 0, 0), 1)
 
 		cv2.putText(frame, str_up, (10,30),font,1,(255,255,255),2,cv2.LINE_AA)
 		cv2.putText(frame, str_up, (10,30),font,1,(0,0,255),1,cv2.LINE_AA)
