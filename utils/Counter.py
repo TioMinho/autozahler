@@ -93,18 +93,21 @@ def main():
 	vehicles = []
 	max_p_age = 5
 	pid = 1
+	frame_id = 0
 
 	########################
 	## CONTAGEM POR FRAME ##
 	########################
 	while(video.isOpened()):
-		# Recupera o próximo frame do vídeo
+		#read a frame
 		ret, frame = video.read()
 		
-		# Verifica se o frame atual é o último do vídeo
+		# If de matar o frame
 		if not ret:
 			break;
-			
+
+		frame_id += 1	
+
 		###################
 		## PREPROCESSING ##
 		###################
@@ -133,35 +136,38 @@ def main():
 				
 				x, y, w, h = cv2.boundingRect(cnt)
 
-				roi = gray_image[y:y+h, x:x+w]
-				cv2.imshow('Region of Interest 1', roi)
-
 				new = True
 				for i in vehicles:
 					if abs(x - i.x) <= w and abs(y - i.y) <= h:
 						new = False
 						i.updateCoords(cx, cy)
 						
-						if i.crossed_line(line_right, line_right_limit):
-							if(w > 95):
-								print("CARRO GRANDE MAH | LARGURA: {0}".format(w))
-								cnt_grande +=1
-
-							elif(w > 60):
-								print("CARRO MEDIO MAH | LARGURA: {0}".format(w))
+						if i.going_DOWN(line_right, line_right_limit):
+							if(w >= 100):
+								if(h >= 70):
+									print("{2} - CARRO GRANDE MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
+									cnt_grande +=1
+								else:
+									print("{2} - CARRO MEDIO MAH* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
+									print("{2} - CARRO MEDIO MAH* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
+									cnt_medio +=2
+									
+							elif(w >= 50):
+								print("{2} - CARRO MEDIO MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
 								cnt_medio +=1
 
-							else:
-								print("MOTINHA MAH | LARGURA: {0}".format(w))
+							elif(w >= 20):
+								print("{2} - MOTINHA MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
 								cnt_pequeno +=1
-					  
-							roi = gray_image[y:y+h, x:x+w]
-							cv2.imshow('Region of Interest 2', roi)
 
-							cnt_total += 1
+							if(w >= 20):
+								roi = gray_image[y:y+h, x:x+w]
+								cv2.imshow('Region of Interest', roi)
+
+								cnt_total += 1
 						break
 
-					if i.state and i.x > line_right:
+					if i.state == '1' and i.x > line_right:
 						i.setDone()
 
 					if i.timedOut():
@@ -207,8 +213,15 @@ def main():
 		if k == 27:
 			break
 
-	# Finalização do Processo de Renderização
+	# Finalizaçã do Processo de Renderização
 	video.release()
 	cv2.destroyAllWindows()
+
+	print("########### RESULTADO FINAL ###########")
+	print("Total: {0}".format(cnt_total))
+	print("Grandes: {0}".format(cnt_grande))
+	print("Médios: {0}".format(cnt_medio))
+	print("Pequenos: {0}".format(cnt_pequeno))
+
 
 main()

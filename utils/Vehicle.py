@@ -10,7 +10,7 @@ class MyVehicle:
         self.y = yi
         self.tracks = []
         self.done = False
-        self.state = False
+        self.state = '0'
         self.age = 0
         self.max_age = max_age
         self.dir = None
@@ -27,11 +27,11 @@ class MyVehicle:
     def timedOut(self):
         return self.done
     
-    def crossed_line(self, mid_start, mid_end):
+    def going_DOWN(self, mid_start, mid_end):
         if len(self.tracks) >= 2:
             if self.state == '0':
                 if self.tracks[-1][0] > mid_start and self.tracks[-2][0] <= mid_start:
-                    state = True
+                    self.state = '1'
                     return True
             else:
                 return False
