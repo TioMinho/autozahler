@@ -42,43 +42,43 @@ def preProc (img, maskSize, backgroundSubtractor):
 	maskSize:             Tamanho(IMPAR) da mascara para filtro da mediana e rolagem
 	backgroundSubtractor: cv2.createBackgroundSubtractorMOG2()
 	"""
-	cv2.imshow("Img - Original", img)
+	# cv2.imshow("Img - Original", img)
 	
 	#Equalização de Histograma
 	img = cv2.equalizeHist(img)
-	cv2.imshow("Equalizacao de Histograma", img)
+	# cv2.imshow("Equalizacao de Histograma", img)
 	
 	# Remoção de Fundo
 	img = backgroundSubtractor.apply(img)
-	cv2.imshow("Remocao de Fundo", img)
+	# cv2.imshow("Remocao de Fundo", img)
 	
 	# Filtro Limiar Com Binarização
 	img = np.uint8(img*255)
 	_,th = cv2.threshold(img, 127, 255, cv2.THRESH_TOZERO)
-	cv2.imshow("Filtro Limiar Com Binarizacao", np.uint8(th*255))
+	# cv2.imshow("Filtro Limiar Com Binarizacao", np.uint8(th*255))
 
 	# Remove Ruido aleatorio
 	for i in range(1,maskSize):
 		img = img*np.roll(th, i, axis=1)
-	cv2.imshow("Remocao de Ruido aleatorio", img)
+	# cv2.imshow("Remocao de Ruido aleatorio", img)
 
 	# Filtro da media para religar contours desconectados
 	img = cv2.GaussianBlur(th, (maskSize, maskSize), 0) 
-	cv2.imshow("Filtro da Media", img)
+	# cv2.imshow("Filtro da Media", img)
 
 	# Filtro da mediana
 	img = cv2.medianBlur(img, maskSize)
-	cv2.imshow("Filtro da Mediana", img)
+	# cv2.imshow("Filtro da Mediana", img)
 	
 	# Binariza a Imagem Final
 	_,th = cv2.threshold(img,45,255,cv2.THRESH_BINARY)
-	cv2.imshow("Binariza a Imagem Final", th)
+	# cv2.imshow("Binariza a Imagem Final", th)
 	img = th
 	
 	# Preenchimento de Falhas
 	for i in range(1,maskSize):
 		img = np.clip(img+np.roll(th,-i,axis=0),0,255)
-	cv2.imshow("Preenchimento de Falhas", img)
+	# cv2.imshow("Preenchimento de Falhas", img)
 
 	# Retorna o Frame
 	return np.uint8(img)
@@ -143,7 +143,7 @@ def counter(filepath):
 	lastTime = -1
 
 	# Chama função para posicionar as janelas do OpenCV
-	moveAllWindows()
+	# moveAllWindows()
 
 	# Seleciona o frame inicial do vídeo
 	# 220, 15100, 3800
@@ -196,7 +196,7 @@ def counter(filepath):
 				x, y, w, h = cv2.boundingRect(cnt)
 				
 				roi = gray_image[y:y+h, x:x+w]
-				cv2.imshow('Region of Interest', roi)
+				# cv2.imshow('Region of Interest', roi)
 	
 				# Realizamos a busca por algum objeto de Vehicle que possua propriedades (posição e tamanho)
 				# semelhante aos do contour que está sendo analisado
@@ -240,7 +240,7 @@ def counter(filepath):
 
 							if(w >= 20):
 								roi = gray_image[y:y+h, x:x+w]
-								cv2.imshow('Region of Interest 2', roi)
+								# cv2.imshow('Region of Interest 2', roi)
 
 								cv2.imwrite("utils/tmp/roi_"+str(frame_id)+".png", roi)
 
@@ -297,7 +297,7 @@ def counter(filepath):
 		cv2.putText(frame, str_grande, (10,105),font,1,(0,0,255),1,cv2.LINE_AA)
 		
 		# Exibimos o frame atual da contagem na janela
-		cv2.imshow('Frame', cv2.resize(gray_image, (400, 300)))
+		# cv2.imshow('Frame', cv2.resize(gray_image, (400, 300)))
 
 		# Salva a imagem em um arquivo
 		if(frame_time % 30 == 0 and frame_time != lastTime):
@@ -311,9 +311,9 @@ def counter(filepath):
 		out.write(gray_image)
 
 		# Pausa e Verificação da Tecla de Saída (ESC ou Q)
-		k = cv2.waitKey(1) & 0xff
-		if k == 27:
-			break
+		# k = cv2.waitKey(1) & 0xff
+		# if k == 27:
+		# 	break
 
 	# Finalização do Processo de Renderização
 	video.release()
@@ -331,4 +331,4 @@ def counter(filepath):
 	with open('data/counting.json', 'w') as fp:
 		json.dump(countingData, fp, indent=4)
 
-counter("data/5.avi")
+counter("data/1.mp4")
