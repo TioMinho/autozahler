@@ -2,7 +2,7 @@
 from random import randint
 import time
 
-class MyVehicle:
+class Vehicle:
     tracks = []
     def __init__(self, i, xi, yi, max_age):
         self.id = i

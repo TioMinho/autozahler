@@ -1,7 +1,7 @@
 # Declaração de Bibliotecas
 import cv2
 import numpy as np
-import Vehicle
+from vehicle import Vehicle
 import time
 
 # Função para posicionar cada janela do OpenCV
@@ -33,11 +33,8 @@ def moveAllWindows():
 	cv2.namedWindow("Preenchimento de Falhas")
 	cv2.moveWindow("Preenchimento de Falhas", 940, 330)
 
-	cv2.namedWindow("Dilatação")
-	cv2.moveWindow("Dilatação", 1240, 330)
 
-
-def preProc (img, maskSize, backgroundSubtractor, template):
+def preProc (img, maskSize, backgroundSubtractor):
 	"""
 	Parametros da Função
 	Img:                  Imagem em escala de cinza
@@ -55,10 +52,6 @@ def preProc (img, maskSize, backgroundSubtractor, template):
 	cv2.imshow("Remocao de Fundo", img)
 	
 	# Filtro Limiar Com Binarização
-	# _,th = cv2.threshold(img, 0, 1, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-	# cv2.imshow("Filtro Limiar Com Binarizacao", np.uint8(th*255))
-	# img = np.uint8(th*255)
-
 	img = np.uint8(img*255)
 	_,th = cv2.threshold(img, 127, 255, cv2.THRESH_TOZERO)
 	cv2.imshow("Filtro Limiar Com Binarizacao", np.uint8(th*255))
@@ -71,10 +64,6 @@ def preProc (img, maskSize, backgroundSubtractor, template):
 	# Filtro da media para religar contours desconectados
 	img = cv2.GaussianBlur(th, (maskSize, maskSize), 0) 
 	cv2.imshow("Filtro da Media", img)
-
-	# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-	# img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
-	# cv2.imshow("Dilatação", img)
 
 	# Filtro da mediana
 	img = cv2.medianBlur(img, maskSize)
@@ -89,17 +78,12 @@ def preProc (img, maskSize, backgroundSubtractor, template):
 	for i in range(1,maskSize):
 		img = np.clip(img+np.roll(th,-i,axis=0),0,255)
 	cv2.imshow("Preenchimento de Falhas", img)
-	
-	# Dilatação para preencher buracos
-	# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (maskSize, maskSize))
-	# img = cv2.dilate(img, kernel, iterations=2)
-	# cv2.imshow("Dilatação", img)
 
 	# Retorna o Frame
 	return np.uint8(img)
 
 # Função Principal
-def main():
+def counter(filepath):
 	# Variáveis de Contagem
 	cnt_total   = 0
 	cnt_pequeno = 0
@@ -107,11 +91,7 @@ def main():
 	cnt_grande  = 0
 
 	# Criando o objeto de VideoCapture
-	video = cv2.VideoCapture('data/5.avi')
-
-	# Criando template de especificação de histograma
-	template1 = cv2.imread('data/Template1.png', 0)
-	template2 = cv2.imread('data/Template2.png', 0)
+	video = cv2.VideoCapture(filepath)
 
 	# Variáveis de Informação do Vídeo
 	img_width = int(video.get(3))
@@ -133,9 +113,6 @@ def main():
 	line_down		= int(60  * (img_height/100))
 
 	line_center 	= int(line_left + (50 * ((line_right - line_left)/100)))
-
-	line_right_color = (255, 0,   0)
-	line_left_color  = (  0, 0, 255)
 	
 	print("###### LINHAS DE LIMITE ######")
 	print("Região de Interesse (Linha Esquerda): {0}".format(line_left))
@@ -145,6 +122,10 @@ def main():
 	
 	print("Região de Interesse (Linha Central): {0}".format(line_center))
 	print()
+
+	# Define o Codec e Objeto de Escrita de Vídeo
+	fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+	out = cv2.VideoWriter('data/output.mp4', fourcc, 30.0, (img_width, img_height), 0)
 
 	# Cria o objeto do extrator de fundo
 	rfmg2 = cv2.createBackgroundSubtractorMOG2()
@@ -161,7 +142,7 @@ def main():
 
 	# Seleciona o frame inicial do vídeo
 	# 220, 15100, 3800
-	video.set(1, 220)
+	video.set(1, 1)
 
 	########################
 	## CONTAGEM POR FRAME ##
@@ -170,9 +151,6 @@ def main():
 		# Obtém um frame do arquivo de vídeo
 		ret, frame = video.read()
 		
-		# Corta a região de interesse
-		# frame = frame[line_up:line_down, line_left:line_right]
-
 		# Verifica se o frame em questão é o último do vídeo
 		if not ret:
 			break;
@@ -185,7 +163,7 @@ def main():
 		###################
 		# Converte a imagem para preto e branco e realiza pré-processamento
 		gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		mask = preProc(gray_image, 11, rfmg2, template2)
+		mask = preProc(gray_image, 11, rfmg2)
 		
 		##################
 		## FIND CONTOUR ##
@@ -266,7 +244,7 @@ def main():
 				# Se nenhum objeto de Vehicle foi encontrado no passo anterior, criamos um novo objeto para
 				# mantermos esse novo contour em observação.
 				if new == True and cx >= line_left and cx <= line_right and cy <= line_down and cy >= line_up:
-					p = Vehicle.MyVehicle(pid, cx, cy, max_p_age)
+					p = Vehicle(pid, cx, cy, max_p_age)
 					vehicles.append(p)
 					pid += 1
 
@@ -306,6 +284,9 @@ def main():
 		# Exibimos o frame atual da contagem na janela
 		cv2.imshow('Frame', cv2.resize(gray_image, (400, 300)))
 
+		# Salva a imagem em um arquivo
+		out.write(gray_image)
+
 		# Pausa e Verificação da Tecla de Saída (ESC ou Q)
 		k = cv2.waitKey(1) & 0xff
 		if k == 27:
@@ -313,6 +294,7 @@ def main():
 
 	# Finalizaçã do Processo de Renderização
 	video.release()
+	out.release()
 	cv2.destroyAllWindows()
 
 	print("########### RESULTADO FINAL ###########")
@@ -321,5 +303,4 @@ def main():
 	print("Médios: {0}".format(cnt_medio))
 	print("Pequenos: {0}".format(cnt_pequeno))
 
-
-main()
+counter("data/5.avi")
