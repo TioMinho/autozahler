@@ -4,6 +4,16 @@ import numpy as np
 import Vehicle
 import time
 
+def adjust_gamma(image, gamma=1.0):
+	# build a lookup table mapping the pixel values [0, 255] to
+	# their adjusted gamma values
+	invGamma = 1.0 / gamma
+	table = np.array([((i / 255.0) ** invGamma) * 255
+		for i in np.arange(0, 256)]).astype("uint8")
+ 
+	# apply gamma correction using the lookup table
+	return cv2.LUT(image, table)
+
 def hist_match(source, template):
     oldshape = source.shape
     source = source.ravel()
@@ -87,6 +97,7 @@ def preProc (img, maskSize, backgroundSubtractor, template):
 	# clahe = cv2.createCLAHE(clipLimit=10, tileGridSize=(maskSize, maskSize))
 	# img = clahe.apply(img)
 	img = cv2.equalizeHist(img)
+	# img = adjust_gamma(img, 0.2)
 	# img = histMatch(img, template)
 	cv2.imshow("Equalizacao de Histograma", img)
 	
@@ -109,8 +120,13 @@ def preProc (img, maskSize, backgroundSubtractor, template):
 	cv2.imshow("Remocao de Ruido aleatorio", img)
 
 	# Filtro da media para religar contours desconectados
-	img = cv2.GaussianBlur(th, (maskSize, maskSize), 1) 
+	img = cv2.GaussianBlur(th, (maskSize, maskSize), 0) 
 	cv2.imshow("Filtro da Media", img)
+
+	# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+	# img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+	# cv2.imshow("Dilatação", img)
+
 
 	# Filtro da mediana
 	img = cv2.medianBlur(img, maskSize)
@@ -127,8 +143,8 @@ def preProc (img, maskSize, backgroundSubtractor, template):
 	cv2.imshow("Preenchimento de Falhas", img)
 	
 	# Dilatação para preencher buracos
-	# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-	# img = cv2.dilate(img, kernel, iterations=1)
+	# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (maskSize, maskSize))
+	# img = cv2.dilate(img, kernel, iterations=2)
 	# cv2.imshow("Dilatação", img)
 
 	# Retorna o Frame
@@ -163,19 +179,23 @@ def main():
 	print()
 
 	# Linhas de Limite para Contagem
-	line_left 		= int(36  * (img_width/100))
-	line_right 		= int(90 * (img_width/100))
-	line_up			= int(10  * (img_height/100))
+	line_left 		= int(30  * (img_width/100))
+	line_right 		= int(95 * (img_width/100))
+	line_up			= int(5  * (img_height/100))
 	line_down		= int(60  * (img_height/100))
 
-	line_center 	= int(line_left + (65 * ((line_right - line_left)/100)))
+	line_center 	= int(line_left + (50 * ((line_right - line_left)/100)))
 
 	line_right_color = (255, 0,   0)
 	line_left_color  = (  0, 0, 255)
 	
 	print("###### LINHAS DE LIMITE ######")
-	print("Linha de Passagem (Esquerda): {0}".format(line_left))
-	print("Linha de Passagem (Direita): {0}".format(line_right))
+	print("Região de Interesse (Linha Esquerda): {0}".format(line_left))
+	print("Região de Interesse (Linha Cima): {0}".format(line_up))
+	print("Região de Interesse (Linha Direita): {0}".format(line_right))
+	print("Região de Interesse (Linha Baixo): {0}".format(line_down))
+	
+	print("Região de Interesse (Linha Central): {0}".format(line_center))
 	print()
 
 	# Create the background subtractor
@@ -190,16 +210,19 @@ def main():
 
 	moveAllWindows()
 
-	# 200, 15100 
-	video.set(1, 1)
+	# 220, 15100 
+	video.set(1, 15100)
 
 	########################
 	## CONTAGEM POR FRAME ##
 	########################
 	while(video.isOpened()):
-		#read a frame
+		# read a frame
 		ret, frame = video.read()
 		
+		# Corta a região de interesse
+		# frame = frame[line_up:line_down, line_left:line_right]
+
 		# If de matar o frame
 		if not ret:
 			break;
@@ -243,7 +266,7 @@ def main():
 						
 						if i.crossed_line(line_center, line_center+10):
 							if(w >= 100):
-								if(h >= 70):
+								if(h >= 60):
 									print("{2} - CARRO GRANDE MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
 									cnt_grande +=1
 								else:
@@ -276,7 +299,8 @@ def main():
 						vehicles.pop(index)
 						del i
 
-				if new == True and cx >= line_left:
+				if new == True and cx >= line_left and cx <= line_right and cy <= line_down and cy >= line_up:
+					print("Aq")
 					p = Vehicle.MyVehicle(pid, cx, cy, max_p_age)
 					vehicles.append(p)
 					pid += 1
@@ -295,10 +319,10 @@ def main():
 		str_medio 	= 'medio:' + str(cnt_medio)
 		str_grande 	= 'grande:' + str(cnt_grande)
 		
-		# frame = cv2.line(gray_image, (line_right, 0), (line_right, img_height), (255, 0, 0), 1)
-		# frame = cv2.line(gray_image, (line_left, 0), (line_left, img_height), (255, 0, 0), 1)
-		# frame = cv2.line(gray_image, (0, line_up), (img_width, line_up), (255, 0, 0), 1)
-		# frame = cv2.line(gray_image, (0, line_down), (img_width, line_down), (255, 0, 0), 1)
+		frame = cv2.line(gray_image, (line_right, 0), (line_right, img_height), (255, 0, 0), 1)
+		frame = cv2.line(gray_image, (line_left, 0), (line_left, img_height), (255, 0, 0), 1)
+		frame = cv2.line(gray_image, (0, line_up), (img_width, line_up), (255, 0, 0), 1)
+		frame = cv2.line(gray_image, (0, line_down), (img_width, line_down), (255, 0, 0), 1)
 
 		frame = cv2.line(gray_image, (line_center, 0), (line_center, img_height), (255, 0, 0), 2)
 
