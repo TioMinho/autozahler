@@ -4,7 +4,77 @@ import numpy as np
 import Vehicle
 import time
 
-def preProc (img, maskSize, backgroundSubtractor):
+def hist_match(source, template):
+    oldshape = source.shape
+    source = source.ravel()
+    template = template.ravel()
+
+    s_values, bin_idx, s_counts = np.unique(source, return_inverse=True,
+                                            return_counts=True)
+    t_values, t_counts = np.unique(template, return_counts=True)
+
+    s_quantiles = np.cumsum(s_counts).astype(np.float64)
+    s_quantiles /= s_quantiles[-1]
+    t_quantiles = np.cumsum(t_counts).astype(np.float64)
+    t_quantiles /= t_quantiles[-1]
+
+    interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
+
+    return interp_t_values[bin_idx].reshape(oldshape)
+
+def histMatch(img, mask):
+    oldshape = img.shape
+    img = img.ravel()
+    mask = mask.ravel()
+    s_values, bin_idx, s_counts = np.unique(img, return_inverse=True,
+                                            return_counts=True)
+
+    t_values, t_counts = np.unique(mask, return_counts=True)
+
+    s_quantiles = np.cumsum(s_counts).astype(np.float64)
+    s_quantiles /= s_quantiles[-1]
+
+    t_quantiles = np.cumsum(t_counts).astype(np.float64)
+    t_quantiles /= t_quantiles[-1]
+
+    interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
+    img = interp_t_values[bin_idx].reshape(oldshape)
+
+    return img
+
+def moveAllWindows():
+	cv2.namedWindow("Img - Original")
+	cv2.moveWindow("Img - Original", 40,30)
+
+	cv2.namedWindow("Equalizacao de Histograma")
+	cv2.moveWindow("Equalizacao de Histograma", 340,30)
+
+	cv2.namedWindow("Remocao de Fundo")
+	cv2.moveWindow("Remocao de Fundo", 640,30)
+
+	cv2.namedWindow("Filtro Limiar Com Binarizacao")
+	cv2.moveWindow("Filtro Limiar Com Binarizacao", 940,30)
+
+	cv2.namedWindow("Remocao de Ruido aleatorio")
+	cv2.moveWindow("Remocao de Ruido aleatorio", 1240,30)
+
+	cv2.namedWindow("Filtro da Media")
+	cv2.moveWindow("Filtro da Media", 40,330)
+
+	cv2.namedWindow("Filtro da Mediana")
+	cv2.moveWindow("Filtro da Mediana", 340,330)
+
+	cv2.namedWindow("Binariza a Imagem Final")
+	cv2.moveWindow("Binariza a Imagem Final", 640,330)
+
+	cv2.namedWindow("Preenchimento de Falhas")
+	cv2.moveWindow("Preenchimento de Falhas", 940, 330)
+
+	cv2.namedWindow("Dilatação")
+	cv2.moveWindow("Dilatação", 1240, 330)
+
+
+def preProc (img, maskSize, backgroundSubtractor, template):
 	"""
 	Parametros da Função
 	Img:                  Imagem em escala de cinza
@@ -14,29 +84,40 @@ def preProc (img, maskSize, backgroundSubtractor):
 	cv2.imshow("Img - Original", img)
 	
 	#Equalização de Histograma
-	# clahe = cv2.createCLAHE(clipLimit=100, tileGridSize=(maskSize, maskSize))
+	# clahe = cv2.createCLAHE(clipLimit=10, tileGridSize=(maskSize, maskSize))
 	# img = clahe.apply(img)
 	img = cv2.equalizeHist(img)
+	# img = histMatch(img, template)
 	cv2.imshow("Equalizacao de Histograma", img)
 	
 	# Remoção de Fundo
 	img = backgroundSubtractor.apply(img)
 	cv2.imshow("Remocao de Fundo", img)
 	
-	# Filtro Limiar Com Binarização Otsu
-	_,th = cv2.threshold(img, 0, 1, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-	
+	# Filtro Limiar Com Binarização
+	# _,th = cv2.threshold(img, 0, 1, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+	# cv2.imshow("Filtro Limiar Com Binarizacao", np.uint8(th*255))
+	# img = np.uint8(th*255)
+
+	img = np.uint8(img*255)
+	_,th = cv2.threshold(img, 127, 255, cv2.THRESH_TOZERO)
+	cv2.imshow("Filtro Limiar Com Binarizacao", np.uint8(th*255))
+
 	# Remove Ruido aleatorio
 	for i in range(1,maskSize):
 		img = img*np.roll(th, i, axis=1)
 	cv2.imshow("Remocao de Ruido aleatorio", img)
-   
+
+	# Filtro da media para religar contours desconectados
+	img = cv2.GaussianBlur(th, (maskSize, maskSize), 1) 
+	cv2.imshow("Filtro da Media", img)
+
 	# Filtro da mediana
 	img = cv2.medianBlur(img, maskSize)
-	cv2.imshow("Filtro da mediana", img)
+	cv2.imshow("Filtro da Mediana", img)
 	
 	# Binariza a Imagem Final
-	_,th = cv2.threshold(img,1,255,cv2.THRESH_BINARY)
+	_,th = cv2.threshold(img,45,255,cv2.THRESH_BINARY)
 	cv2.imshow("Binariza a Imagem Final", th)
 	img = th
 	
@@ -45,6 +126,11 @@ def preProc (img, maskSize, backgroundSubtractor):
 		img = np.clip(img+np.roll(th,-i,axis=0),0,255)
 	cv2.imshow("Preenchimento de Falhas", img)
 	
+	# Dilatação para preencher buracos
+	# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+	# img = cv2.dilate(img, kernel, iterations=1)
+	# cv2.imshow("Dilatação", img)
+
 	# Retorna o Frame
 	return np.uint8(img)
 
@@ -59,12 +145,16 @@ def main():
 	# Criando o objeto de VideoCapture
 	video = cv2.VideoCapture('data/5.avi')
 
+	# Criando template de especificação de histograma
+	template1 = cv2.imread('data/Template1.png', 0)
+	template2 = cv2.imread('data/Template2.png', 0)
+
 	# Variáveis de Informação do Vídeo
 	img_width = int(video.get(3))
 	img_height = int(video.get(4))
 
 	frameArea = img_height*img_width
-	areaTH = frameArea / 300
+	areaTH = frameArea / 175
 
 	print("########### VIDEO ###########")
 	print("Dimensoes: {0}x{1}".format(img_width, img_height))
@@ -74,7 +164,11 @@ def main():
 
 	# Linhas de Limite para Contagem
 	line_left 		= int(36  * (img_width/100))
-	line_right 		= int(70 * (img_width/100))
+	line_right 		= int(90 * (img_width/100))
+	line_up			= int(10  * (img_height/100))
+	line_down		= int(60  * (img_height/100))
+
+	line_center 	= int(line_left + (65 * ((line_right - line_left)/100)))
 
 	line_right_color = (255, 0,   0)
 	line_left_color  = (  0, 0, 255)
@@ -94,6 +188,11 @@ def main():
 	pid = 1
 	frame_id = 0
 
+	moveAllWindows()
+
+	# 200, 15100 
+	video.set(1, 1)
+
 	########################
 	## CONTAGEM POR FRAME ##
 	########################
@@ -111,7 +210,7 @@ def main():
 		## PREPROCESSING ##
 		###################
 		gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		mask = preProc(gray_image, 7, rfmg2)
+		mask = preProc(gray_image, 11, rfmg2, template2)
 		
 		##################
 		## FIND CONTOUR ##
@@ -119,7 +218,7 @@ def main():
 		_, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)
 
 		for cnt in contours:
-			cv2.drawContours(mask, cnt, -1, (0, 255, 0), 3, 8)
+			# cv2.drawContours(mask, cnt, -1, (0, 255, 0), 3, 8)
 
 			area = cv2.contourArea(cnt)
 			if area > areaTH and area < 20000:
@@ -134,7 +233,7 @@ def main():
 				x, y, w, h = cv2.boundingRect(cnt)
 				
 				roi = gray_image[y:y+h, x:x+w]
-				cv2.imshow('Region of Interest 2', roi)
+				cv2.imshow('Region of Interest', roi)
 	
 				new = True
 				for i in vehicles:
@@ -142,7 +241,7 @@ def main():
 						new = False
 						i.updateCoords(cx, cy)
 						
-						if i.crossed_line(line_right, line_right+10):
+						if i.crossed_line(line_center, line_center+10):
 							if(w >= 100):
 								if(h >= 70):
 									print("{2} - CARRO GRANDE MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
@@ -164,10 +263,12 @@ def main():
 								roi = gray_image[y:y+h, x:x+w]
 								cv2.imshow('Region of Interest 2', roi)
 
+								cv2.imwrite("utils/tmp/roi_"+str(frame_id)+".png", roi)
+
 								cnt_total += 1
 						break
 
-					if i.state == '1' and i.x > line_right:
+					if i.state == '1' and i.x > line_left:
 						i.setDone()
 
 					if i.timedOut():
@@ -194,8 +295,12 @@ def main():
 		str_medio 	= 'medio:' + str(cnt_medio)
 		str_grande 	= 'grande:' + str(cnt_grande)
 		
-		frame = cv2.line(gray_image, (line_right, 0), (line_right, img_height), (255, 0, 0), 1)
-		frame = cv2.line(gray_image, (line_left, 0), (line_left, img_height), (255, 0, 0), 1)
+		# frame = cv2.line(gray_image, (line_right, 0), (line_right, img_height), (255, 0, 0), 1)
+		# frame = cv2.line(gray_image, (line_left, 0), (line_left, img_height), (255, 0, 0), 1)
+		# frame = cv2.line(gray_image, (0, line_up), (img_width, line_up), (255, 0, 0), 1)
+		# frame = cv2.line(gray_image, (0, line_down), (img_width, line_down), (255, 0, 0), 1)
+
+		frame = cv2.line(gray_image, (line_center, 0), (line_center, img_height), (255, 0, 0), 2)
 
 		cv2.putText(frame, str_up, (10,30),font,1,(255,255,255),2,cv2.LINE_AA)
 		cv2.putText(frame, str_up, (10,30),font,1,(0,0,255),1,cv2.LINE_AA)
@@ -209,7 +314,7 @@ def main():
 		cv2.imshow('Frame', cv2.resize(gray_image, (400, 300)))
 
 		# Pausa e Verificação da Tecla de Saída (ESC ou Q)
-		k = cv2.waitKey(10) & 0xff
+		k = cv2.waitKey(1) & 0xff
 		if k == 27:
 			break
 
