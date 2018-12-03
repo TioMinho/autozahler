@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from vehicle import Vehicle
 import time
+import json
 
 # Função para posicionar cada janela do OpenCV
 def moveAllWindows():
@@ -85,10 +86,10 @@ def preProc (img, maskSize, backgroundSubtractor):
 # Função Principal
 def counter(filepath):
 	# Variáveis de Contagem
-	cnt_total   = 0
-	cnt_pequeno = 0
-	cnt_medio   = 0
-	cnt_grande  = 0
+	cnt_min 	 = {"time": "", "total": 0, "pequeno": 0, "medio": 0, "grande": 0}
+	cnt_min_rows = []
+
+	cnt_total 	 = {"total": 0, "pequeno": 0, "medio": 0, "grande": 0}
 
 	# Criando o objeto de VideoCapture
 	video = cv2.VideoCapture(filepath)
@@ -97,11 +98,14 @@ def counter(filepath):
 	img_width = int(video.get(3))
 	img_height = int(video.get(4))
 
+	fps = int(video.get(5))
+
 	frameArea = img_height*img_width
 	areaTH = frameArea / 175
 
 	print("########### VIDEO ###########")
 	print("Dimensoes: {0}x{1}".format(img_width, img_height))
+	print("Frames p/ Segundo: {0}".format(fps))
 	print("Area Total: {0}".format(frameArea))
 	print('Area de Threshold: {0}'.format(areaTH))
 	print()
@@ -136,6 +140,7 @@ def counter(filepath):
 	max_p_age = 5000
 	pid = 1
 	frame_id = 0
+	lastTime = -1
 
 	# Chama função para posicionar as janelas do OpenCV
 	moveAllWindows()
@@ -155,8 +160,9 @@ def counter(filepath):
 		if not ret:
 			break;
 
-		# Atualiza contador de frames
+		# Atualiza contador de frames e o segundo do vídeo
 		frame_id += 1	
+		frame_time = frame_id // fps
 
 		###################
 		## PREPROCESSING ##
@@ -210,19 +216,27 @@ def counter(filepath):
 							if(w >= 95):
 								if(h >= 60):
 									print("{2} - CARRO GRANDE | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
-									cnt_grande += 1
+									cnt_total["grande"] += 1
+									cnt_min["grande"] += 1
+
 								else:
 									print("{2} - CARRO MEDIO* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
 									print("{2} - CARRO MEDIO* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
-									cnt_medio += 2
+									cnt_total["medio"] += 2
+									cnt_total["total"] += 1
+
+									cnt_min["medio"] += 2
+									cnt_min["total"] += 1
 									
 							elif(w >= 50):
 								print("{2} - CARRO MEDIO | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
-								cnt_medio += 1
+								cnt_total["medio"] += 1
+								cnt_min["medio"] += 1
 
 							elif(w >= 20):
 								print("{2} - MOTINHA | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
-								cnt_pequeno += 1
+								cnt_total["pequeno"] += 1
+								cnt_min["pequeno"] += 1
 
 							if(w >= 20):
 								roi = gray_image[y:y+h, x:x+w]
@@ -230,7 +244,8 @@ def counter(filepath):
 
 								cv2.imwrite("utils/tmp/roi_"+str(frame_id)+".png", roi)
 
-								cnt_total += 1
+								cnt_total["total"] += 1
+								cnt_min["total"] += 1
 						break
 
 					# Caso o veículo possua estado '1' (cruzou a linha de chegada), apagamos esse objeto da lista
@@ -259,10 +274,10 @@ def counter(filepath):
 		##   IMAGE   ##
 		###############
 		# Imprimimos um texto na imagem de exibição para mostrar a contagem em tempo-real
-		str_up 		= 'total: ' + str(cnt_total)
-		str_down 	= 'pequeno:' + str(cnt_pequeno)
-		str_medio 	= 'medio:' + str(cnt_medio)
-		str_grande 	= 'grande:' + str(cnt_grande)
+		str_up 		= 'total: ' + str(cnt_total["total"])
+		str_down 	= 'pequeno:' + str(cnt_total["pequeno"])
+		str_medio 	= 'medio:' + str(cnt_total["medio"])
+		str_grande 	= 'grande:' + str(cnt_total["grande"])
 		
 		# Incluimos algumas linhas de limites para analisar o vídeo
 		frame = cv2.line(gray_image, (line_right, 0), (line_right, img_height), (255, 0, 0), 1)
@@ -285,6 +300,14 @@ def counter(filepath):
 		cv2.imshow('Frame', cv2.resize(gray_image, (400, 300)))
 
 		# Salva a imagem em um arquivo
+		if(frame_time % 30 == 0 and frame_time != lastTime):
+			lastTime = frame_time
+
+			cnt_min["time"] = "{0:02d}:{1:02d}".format(frame_time // 60, frame_time % 60)
+			cnt_min_rows.append(cnt_min)
+
+			cnt_min = {"total": 0, "pequeno": 0, "medio": 0, "grande": 0}
+
 		out.write(gray_image)
 
 		# Pausa e Verificação da Tecla de Saída (ESC ou Q)
@@ -292,15 +315,20 @@ def counter(filepath):
 		if k == 27:
 			break
 
-	# Finalizaçã do Processo de Renderização
+	# Finalização do Processo de Renderização
 	video.release()
 	out.release()
 	cv2.destroyAllWindows()
 
 	print("########### RESULTADO FINAL ###########")
-	print("Total: {0}".format(cnt_total))
-	print("Grandes: {0}".format(cnt_grande))
-	print("Médios: {0}".format(cnt_medio))
-	print("Pequenos: {0}".format(cnt_pequeno))
+	print("Total: {0}".format(cnt_total["total"]))
+	print("Grandes: {0}".format(cnt_total["grande"]))
+	print("Médios: {0}".format(cnt_total["medio"]))
+	print("Pequenos: {0}".format(cnt_total["pequeno"]))
+
+	# Salva os dados de contagem 
+	countingData = {"total": cnt_total, "timeseries": cnt_min_rows}
+	with open('data/counting.json', 'w') as fp:
+		json.dump(countingData, fp, indent=4)
 
 counter("data/5.avi")

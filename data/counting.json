@@ -1,0 +1,17 @@
+{
+    "total": {
+        "total": 5,
+        "pequeno": 0,
+        "medio": 5,
+        "grande": 0
+    },
+    "timeseries": [
+        {
+            "time": "00:00",
+            "total": 0,
+            "pequeno": 0,
+            "medio": 0,
+            "grande": 0
+        }
+    ]
+}
