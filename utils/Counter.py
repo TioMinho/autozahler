@@ -4,54 +4,7 @@ import numpy as np
 import Vehicle
 import time
 
-def adjust_gamma(image, gamma=1.0):
-	# build a lookup table mapping the pixel values [0, 255] to
-	# their adjusted gamma values
-	invGamma = 1.0 / gamma
-	table = np.array([((i / 255.0) ** invGamma) * 255
-		for i in np.arange(0, 256)]).astype("uint8")
- 
-	# apply gamma correction using the lookup table
-	return cv2.LUT(image, table)
-
-def hist_match(source, template):
-    oldshape = source.shape
-    source = source.ravel()
-    template = template.ravel()
-
-    s_values, bin_idx, s_counts = np.unique(source, return_inverse=True,
-                                            return_counts=True)
-    t_values, t_counts = np.unique(template, return_counts=True)
-
-    s_quantiles = np.cumsum(s_counts).astype(np.float64)
-    s_quantiles /= s_quantiles[-1]
-    t_quantiles = np.cumsum(t_counts).astype(np.float64)
-    t_quantiles /= t_quantiles[-1]
-
-    interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
-
-    return interp_t_values[bin_idx].reshape(oldshape)
-
-def histMatch(img, mask):
-    oldshape = img.shape
-    img = img.ravel()
-    mask = mask.ravel()
-    s_values, bin_idx, s_counts = np.unique(img, return_inverse=True,
-                                            return_counts=True)
-
-    t_values, t_counts = np.unique(mask, return_counts=True)
-
-    s_quantiles = np.cumsum(s_counts).astype(np.float64)
-    s_quantiles /= s_quantiles[-1]
-
-    t_quantiles = np.cumsum(t_counts).astype(np.float64)
-    t_quantiles /= t_quantiles[-1]
-
-    interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
-    img = interp_t_values[bin_idx].reshape(oldshape)
-
-    return img
-
+# Função para posicionar cada janela do OpenCV
 def moveAllWindows():
 	cv2.namedWindow("Img - Original")
 	cv2.moveWindow("Img - Original", 40,30)
@@ -94,11 +47,7 @@ def preProc (img, maskSize, backgroundSubtractor, template):
 	cv2.imshow("Img - Original", img)
 	
 	#Equalização de Histograma
-	# clahe = cv2.createCLAHE(clipLimit=10, tileGridSize=(maskSize, maskSize))
-	# img = clahe.apply(img)
 	img = cv2.equalizeHist(img)
-	# img = adjust_gamma(img, 0.2)
-	# img = histMatch(img, template)
 	cv2.imshow("Equalizacao de Histograma", img)
 	
 	# Remoção de Fundo
@@ -126,7 +75,6 @@ def preProc (img, maskSize, backgroundSubtractor, template):
 	# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
 	# img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
 	# cv2.imshow("Dilatação", img)
-
 
 	# Filtro da mediana
 	img = cv2.medianBlur(img, maskSize)
@@ -198,89 +146,105 @@ def main():
 	print("Região de Interesse (Linha Central): {0}".format(line_center))
 	print()
 
-	# Create the background subtractor
+	# Cria o objeto do extrator de fundo
 	rfmg2 = cv2.createBackgroundSubtractorMOG2()
 
-	# Variables
+	# Variáveis auxiliares dos processamentos
 	font = cv2.FONT_HERSHEY_SIMPLEX
 	vehicles = []
-	max_p_age = 5
+	max_p_age = 5000
 	pid = 1
 	frame_id = 0
 
+	# Chama função para posicionar as janelas do OpenCV
 	moveAllWindows()
 
-	# 220, 15100 
-	video.set(1, 15100)
+	# Seleciona o frame inicial do vídeo
+	# 220, 15100, 3800
+	video.set(1, 220)
 
 	########################
 	## CONTAGEM POR FRAME ##
 	########################
 	while(video.isOpened()):
-		# read a frame
+		# Obtém um frame do arquivo de vídeo
 		ret, frame = video.read()
 		
 		# Corta a região de interesse
 		# frame = frame[line_up:line_down, line_left:line_right]
 
-		# If de matar o frame
+		# Verifica se o frame em questão é o último do vídeo
 		if not ret:
 			break;
 
+		# Atualiza contador de frames
 		frame_id += 1	
 
 		###################
 		## PREPROCESSING ##
 		###################
+		# Converte a imagem para preto e branco e realiza pré-processamento
 		gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		mask = preProc(gray_image, 11, rfmg2, template2)
 		
 		##################
 		## FIND CONTOUR ##
 		##################
+		# Extrai todos os Contours da imagem
 		_, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)
 
+		# Para cada contour, iremos buscar um objeto de veículo que mais se assemelha ao contour
+		# e verificamos se ele cruzou a linha central.
 		for cnt in contours:
-			# cv2.drawContours(mask, cnt, -1, (0, 255, 0), 3, 8)
 
+			# Calculamos a área do Contour para só considerar contours de tamanho adequado
 			area = cv2.contourArea(cnt)
 			if area > areaTH and area < 20000:
 				################
 				#   TRACKING   #
 				################
+				# Calculamos e exibimos o retângulo de segmentação desse contour
 				M = cv2.moments(cnt)
 				
 				cx = int(M['m10']/M['m00'])
 				cy = int(M['m01']/M['m00'])
-				
+
 				x, y, w, h = cv2.boundingRect(cnt)
 				
 				roi = gray_image[y:y+h, x:x+w]
 				cv2.imshow('Region of Interest', roi)
 	
+				# Realizamos a busca por algum objeto de Vehicle que possua propriedades (posição e tamanho)
+				# semelhante aos do contour que está sendo analisado
 				new = True
 				for i in vehicles:
 					if abs(x - i.x) <= w and abs(y - i.y) <= h:
 						new = False
+
+						# if(cx <= i.x):
+						# 	i.state = '1'
+
+						# Atualizamos as coordenadas do objeto com base nas coordenadas do Contour
 						i.updateCoords(cx, cy)
 						
+						# Verificamos se o objeto cruzou a linha, e então incluimos na contagem adequada
 						if i.crossed_line(line_center, line_center+10):
-							if(w >= 100):
+							if(w >= 95):
 								if(h >= 60):
-									print("{2} - CARRO GRANDE MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
-									cnt_grande +=1
+									print("{2} - CARRO GRANDE | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
+									cnt_grande += 1
 								else:
-									print("{2} - CARRO MEDIO MAH* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
-									print("{2} - CARRO MEDIO MAH* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
-									cnt_medio +=2
+									print("{2} - CARRO MEDIO* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
+									print("{2} - CARRO MEDIO* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
+									cnt_medio += 2
 									
 							elif(w >= 50):
-								print("{2} - CARRO MEDIO MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
-								cnt_medio +=1
+								print("{2} - CARRO MEDIO | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
+								cnt_medio += 1
 
 							elif(w >= 20):
-								print("{2} - MOTINHA MAH | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
-								cnt_pequeno +=1
+								print("{2} - MOTINHA | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
+								cnt_pequeno += 1
 
 							if(w >= 20):
 								roi = gray_image[y:y+h, x:x+w]
@@ -291,16 +255,17 @@ def main():
 								cnt_total += 1
 						break
 
-					if i.state == '1' and i.x > line_left:
+					# Caso o veículo possua estado '1' (cruzou a linha de chegada), apagamos esse objeto da lista
+					# (Eĺe não poderá ser contado novamente e nem nos interessa).
+					if i.state == '1' and i.x > line_center:
 						i.setDone()
-
-					if i.timedOut():
 						index = vehicles.index(i)
 						vehicles.pop(index)
 						del i
 
+				# Se nenhum objeto de Vehicle foi encontrado no passo anterior, criamos um novo objeto para
+				# mantermos esse novo contour em observação.
 				if new == True and cx >= line_left and cx <= line_right and cy <= line_down and cy >= line_up:
-					print("Aq")
 					p = Vehicle.MyVehicle(pid, cx, cy, max_p_age)
 					vehicles.append(p)
 					pid += 1
@@ -308,17 +273,20 @@ def main():
 				##################
 				##   DRAWING    ##
 				##################
+				# Desenhamos o bounding-box sobre os contours identiicados
 				cv2.circle(gray_image,(cx, cy), 4, (0,0,255), -1)
 				cv2.rectangle(gray_image, (x,y), (x+w,y+h), (0,255,0), 2)
 
 		###############
 		##   IMAGE   ##
 		###############
+		# Imprimimos um texto na imagem de exibição para mostrar a contagem em tempo-real
 		str_up 		= 'total: ' + str(cnt_total)
 		str_down 	= 'pequeno:' + str(cnt_pequeno)
 		str_medio 	= 'medio:' + str(cnt_medio)
 		str_grande 	= 'grande:' + str(cnt_grande)
 		
+		# Incluimos algumas linhas de limites para analisar o vídeo
 		frame = cv2.line(gray_image, (line_right, 0), (line_right, img_height), (255, 0, 0), 1)
 		frame = cv2.line(gray_image, (line_left, 0), (line_left, img_height), (255, 0, 0), 1)
 		frame = cv2.line(gray_image, (0, line_up), (img_width, line_up), (255, 0, 0), 1)
@@ -335,6 +303,7 @@ def main():
 		cv2.putText(frame, str_grande, (10,105),font,1,(255,255,255),2,cv2.LINE_AA)
 		cv2.putText(frame, str_grande, (10,105),font,1,(0,0,255),1,cv2.LINE_AA)
 		
+		# Exibimos o frame atual da contagem na janela
 		cv2.imshow('Frame', cv2.resize(gray_image, (400, 300)))
 
 		# Pausa e Verificação da Tecla de Saída (ESC ou Q)

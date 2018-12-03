@@ -5,7 +5,7 @@ import time
 class MyVehicle:
     tracks = []
     def __init__(self, i, xi, yi, max_age):
-        self.i = i
+        self.id = i
         self.x = xi
         self.y = yi
         self.tracks = []
@@ -13,7 +13,6 @@ class MyVehicle:
         self.state = '0'
         self.age = 0
         self.max_age = max_age
-        self.dir = None
     
     def updateCoords(self, xn, yn):
         self.age = 0
@@ -30,7 +29,7 @@ class MyVehicle:
     def crossed_line(self, mid_start, mid_end):
         if len(self.tracks) >= 2:
             if self.state == '0':
-                if self.tracks[-1][0] > mid_start and self.tracks[-2][0] <= mid_start:
+                if self.tracks[-1][0] >= mid_start and self.tracks[-2][0] <= mid_start:
                     self.state = '1'
                     return True
             else:
