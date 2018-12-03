@@ -174,3 +174,7 @@ Thumbs.db
 *.rar
 *.tar
 *.zip
+
+# ignore videos for pushing
+data/*.mp4
+data/*.avi

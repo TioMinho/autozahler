@@ -1,0 +1,164 @@
+{
+    "total": {
+        "total": 58,
+        "pequeno": 14,
+        "medio": 39,
+        "grande": 5
+    },
+    "timeseries": [
+        {
+            "time": "00:00",
+            "total": 0,
+            "pequeno": 0,
+            "medio": 0,
+            "grande": 0
+        },
+        {
+            "total": 3,
+            "pequeno": 0,
+            "medio": 3,
+            "grande": 0,
+            "time": "00:30"
+        },
+        {
+            "total": 4,
+            "pequeno": 0,
+            "medio": 4,
+            "grande": 0,
+            "time": "01:00"
+        },
+        {
+            "total": 3,
+            "pequeno": 1,
+            "medio": 2,
+            "grande": 0,
+            "time": "01:30"
+        },
+        {
+            "total": 5,
+            "pequeno": 2,
+            "medio": 3,
+            "grande": 0,
+            "time": "02:00"
+        },
+        {
+            "total": 3,
+            "pequeno": 0,
+            "medio": 3,
+            "grande": 0,
+            "time": "02:30"
+        },
+        {
+            "total": 2,
+            "pequeno": 1,
+            "medio": 1,
+            "grande": 0,
+            "time": "03:00"
+        },
+        {
+            "total": 2,
+            "pequeno": 1,
+            "medio": 0,
+            "grande": 1,
+            "time": "03:30"
+        },
+        {
+            "total": 4,
+            "pequeno": 1,
+            "medio": 3,
+            "grande": 0,
+            "time": "04:00"
+        },
+        {
+            "total": 10,
+            "pequeno": 1,
+            "medio": 6,
+            "grande": 3,
+            "time": "04:30"
+        },
+        {
+            "total": 1,
+            "pequeno": 0,
+            "medio": 1,
+            "grande": 0,
+            "time": "05:00"
+        },
+        {
+            "total": 1,
+            "pequeno": 0,
+            "medio": 1,
+            "grande": 0,
+            "time": "05:30"
+        },
+        {
+            "total": 2,
+            "pequeno": 1,
+            "medio": 1,
+            "grande": 0,
+            "time": "06:00"
+        },
+        {
+            "total": 2,
+            "pequeno": 2,
+            "medio": 0,
+            "grande": 0,
+            "time": "06:30"
+        },
+        {
+            "total": 0,
+            "pequeno": 0,
+            "medio": 0,
+            "grande": 0,
+            "time": "07:00"
+        },
+        {
+            "total": 9,
+            "pequeno": 0,
+            "medio": 9,
+            "grande": 0,
+            "time": "07:30"
+        },
+        {
+            "total": 1,
+            "pequeno": 1,
+            "medio": 0,
+            "grande": 0,
+            "time": "08:00"
+        },
+        {
+            "total": 0,
+            "pequeno": 0,
+            "medio": 0,
+            "grande": 0,
+            "time": "08:30"
+        },
+        {
+            "total": 2,
+            "pequeno": 1,
+            "medio": 0,
+            "grande": 1,
+            "time": "09:00"
+        },
+        {
+            "total": 0,
+            "pequeno": 0,
+            "medio": 0,
+            "grande": 0,
+            "time": "09:30"
+        },
+        {
+            "total": 2,
+            "pequeno": 1,
+            "medio": 1,
+            "grande": 0,
+            "time": "10:00"
+        },
+        {
+            "total": 0,
+            "pequeno": 0,
+            "medio": 0,
+            "grande": 0,
+            "time": "10:30"
+        }
+    ]
+}
