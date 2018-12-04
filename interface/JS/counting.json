@@ -1,0 +1,45 @@
+{
+    "total": {
+        "total": 5,
+        "pequeno": 0,
+        "medio": 5,
+        "grande": 0
+    },
+    "timeseries": [
+        {
+            "time": "00:00",
+            "total": 0,
+            "pequeno": 0,
+            "medio": 0,
+            "grande": 0
+        },
+        {
+            "total": 2,
+            "pequeno": 0,
+            "medio": 2,
+            "grande": 0,
+            "time": "00:05"
+        },
+        {
+            "total": 1,
+            "pequeno": 0,
+            "medio": 1,
+            "grande": 0,
+            "time": "00:10"
+        },
+        {
+            "total": 1,
+            "pequeno": 0,
+            "medio": 1,
+            "grande": 0,
+            "time": "00:15"
+        },
+        {
+            "total": 0,
+            "pequeno": 0,
+            "medio": 0,
+            "grande": 0,
+            "time": "00:20"
+        }
+    ]
+}
