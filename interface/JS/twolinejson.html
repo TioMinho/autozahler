@@ -2,109 +2,54 @@
 <meta charset="utf-8">
 <style> /* set the CSS */
 
-.line {
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+  
+.focus circle {
   fill: none;
   stroke: steelblue;
-  stroke-width: 2px;
+}
+
+.grid line {
+    stroke: grey;
+  stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke: grey;
+    stroke-width: 0;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.tick {
+    opacity: 0.5;
+}
+
+line {
+    opacity: 0.6;
 }
 
 </style>
 <body>
 
+  <div id="aaa"></div>
+  <div id="aaa2"></div>
+
 <!-- load the d3.js library -->    	
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="../../static/js/script.js"></script>
 <script>
-
-// set the dimensions and margins of the graph
-var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-// parse the date / time
-// var parseTime = d3.timeParse("%d-%b-%y");
-var parseTime = d3.timeParse("%I:%M%p");
-
-// set the ranges
-var x = d3.scaleTime().range([0, width]);
-var y = d3.scaleLinear().range([height, 0]);
-
-// define the 1st line
-var valueline = d3.line()
-    .x(function(d) { return x(d.time); })
-    .y(function(d) { return y(d.total); });
-
-// define the 2nd line
-var valueline2 = d3.line()
-    .x(function(d) { return x(d.time); })
-    .y(function(d) { return y(d.pequeno); });
-
-// define the 3nd line
-var valueline3 = d3.line()
-    .x(function(d) { return x(d.time); })
-    .y(function(d) { return y(d.medio); });
-
-// append the svg obgect to the body of the page
-// appends a 'group' element to 'svg'
-// moves the 'group' element to the top left margin
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
-// Get the data
-d3.json("counting.json", function(error, data) {
-  if (error) throw error;
-
-
-  // format the data
-  data.timeseries.forEach(function(d) {
-      // if (error) {console.log(error)}
-      d.time = parseTime(d.time);
-      // d.time = +d.time;
-      d.total = +d.total;
-      d.pequeno = +d.pequeno;
-      d.medio = +d.medio;
-      console.log(d.time)
-  });
-
-  // Scale the range of the data
-  x.domain(d3.extent(data, function(d) { return d.time; }));
-  y.domain([0, d3.max(data, function(d) {
-	  return Math.max(d.total, d.pequeno); })]);
-
-  console.log(data.time)
-  // Add the valueline path.
-  svg.append("path")
-      .data([data])
-      .attr("class", "line")
-      .attr("d", valueline);
-
-  // Add the valueline2 path.
-  svg.append("path")
-      .data([data])
-      .attr("class", "line")
-      .style("stroke", "red")
-      .attr("d", valueline2);
-
-  // Add the valueline3 path.
-  svg.append("path")
-      .data([data])
-      .attr("class", "line")
-      .style("stroke", "green")
-      .attr("d", valueline3);
-
-  // Add the X Axis
-  svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
-
-  // Add the Y Axis
-  svg.append("g")
-      .call(d3.axisLeft(y));
-
-});
-
+  lineChart("data2.csv", "#aaa")
+  barChart([["Pequeno", "Médio", "Grande"], [10, 20, 30]], "#aaa2")
 </script>
 </body>
