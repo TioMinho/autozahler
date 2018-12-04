@@ -6,6 +6,10 @@
     <title>Autozähler | Analysis</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css" />
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="/static/js/script.js"></script>
 </head>
 <body>
     <div class="container">
@@ -78,15 +82,26 @@
                         <div class="col-md-9 nopad">
                             <label class="label-default">Linha do Tempo</label>
                         </div>
+                        <div class="box-infos" id="car_linechart"></div>
                     </div>
 
-                <div id=car_barchart>
-                    Gráfico de Barra
+                <div class="col-md-6 nopad">
+                    <div class="col-md-9 nopad">
+                        <label class="label-default">Contagem</label>
+                    </div>
+                    <div class="box-infos" id="car_barchart"></div>
                 </div>
-
             </div>
-            
         </div>  
     </div>
+
+    <script type="text/javascript">
+        d3.csv("/static/data/data2.csv", function(data) {
+            lineChart(data, "#car_linechart")
+        })
+
+        barChart([["Leves", "Passeio", "Pesados"], [10, 20, 30]], "#car_barchart")
+    </script>
+
 </body>
 </html>

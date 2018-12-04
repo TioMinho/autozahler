@@ -1,9 +1,9 @@
 // Função para gerar um gráfico de linhas
 function lineChart(data, panel) {
 	// set the dimensions and margins of the graph
-	var margin = {top: 40, right: 50, bottom: 40, left: 50},
-	    width = 960 - margin.left - margin.right,
-	    height = 500 - margin.top - margin.bottom;
+	var margin = {top: 40, right: 10, bottom: 40, left: 10},
+	    width = $(panel).width() - margin.left - margin.right,
+	    height = 250 - margin.top - margin.bottom;
 
 	// parse the date / time
 	var parseTime = d3.timeParse("%M:%S");
@@ -145,9 +145,9 @@ function lineChart(data, panel) {
 function barChart(dataset, panel) {
 
 	// Variáveis Gerais
-	var margin = {top: 60, right: 50, bottom: 40, left: 50},
-	    w = 960 - margin.left - margin.right,
-	    h = 500 - margin.top - margin.bottom;
+	var margin = {top: 60, right: 10, bottom: 40, left: 10},
+	    w = $(panel).width() - margin.left - margin.right,
+	    h = 250 - margin.top - margin.bottom;
 
 	var label = dataset[0]
 	var dataset = dataset[1]
