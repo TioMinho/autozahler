@@ -61,6 +61,7 @@ body {
 	margin:5px 0px;
 	border-width: 2px;
 	font-size: 0.7em;
+	float: left;
 }
 
 #box-video {
@@ -102,6 +103,7 @@ body {
 
 .nopad {
 	padding-left: 0px !important;
+	float: left;
 }
 
 .nopadr {
@@ -220,4 +222,9 @@ body {
 	width: auto;
 	height: auto;
 	max-width: 100%;
+}
+
+#barra {
+	min-height: 50%;
+	height: auto;
 }

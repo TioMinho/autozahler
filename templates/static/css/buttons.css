@@ -1,0 +1,29 @@
+.buttons {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.button-back {
+	padding: 5px 20px 5px 0;
+}
+
+.button-down {
+	padding: 5px 0px 5px 20px;
+}
+
+.button-primary {
+	text-align: center;
+	vertical-align: middle;
+	border: 1px solid transparent;
+	cursor: pointer;
+	background-color: #0084c5;
+	color: #ffffff;
+	transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.button-primary:hover {
+	color: #fff;
+	background-color: #0069d9;
+	border-color: #0062cc;
+	text-decoration: none;
+}
