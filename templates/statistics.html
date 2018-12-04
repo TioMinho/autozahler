@@ -5,17 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Autozähler | Analysis</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" type="text/css" media="screen" href="../static/css/style.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css" />
 </head>
 <body>
     <div class="container">
         <div class="row">
             <div class="col-md-6 nopad">
-                <img id=logo_auto src="../static/assets/logo_autozahler_statistics.png"/>
+                <img id=logo_auto src="/static/assets/logo_autozahler_statistics.png"/>
                 <div id="box-video" class="background-striped">
                     <div id="video-content">
-							<video width="100%" height="100%" controls>
-									<source src="{{ videopath }}" type="video/mp4">
+							<video width="100%" height="100%" controls autoplay>
+									<source src="{{ videopath }}video_counted.mp4" type="video/mp4">
 								  Your browser does not support the video tag.
 							</video>
 					</div>
@@ -37,55 +37,47 @@
                 <div class="col-md-12 nopad display-label-default">
                     <label class="label-primary pull-right">Resultado da Análise</label>
                 </div>
-
-                    <div class="col-md-6 nopad">
-                            <div class="col-md-9 nopad">
-                                <label class="label-default">Informações do Arquivo</label>
-                            </div>    
-                            <div class="box-infos">
-                                <br/><br/>
-                                Nome: Meuarquivodevideoparaanalise<br/>
-                                Formato: AVI<br/>
-                                Duração: 10m48s<br/>
-                                Resolução: 352 x 288 pixels<br/>
-                                Profundidade de cores: 8 bits<br/>
-                                Taxa de Quadros: 30 FPS
-                            </div>
-                            <div class="col-md-9 nopad">
-                                <label class="label-default">Tráfego de Veículos</label>
-                            </div>
-                            <table id=table-trafego>
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Médio</th>
-                                        <th>Pico</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Leves</td>
-                                        <td>2.96/minuto</td>
-                                        <td>2.96/minuto</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Passeio</td>
-                                        <td>2.96/minuto</td>
-                                        <td>2.96/minuto</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pesados</td>
-                                        <td>2.96/minuto</td>
-                                        <td>2.96/minuto</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div class="col-md-9 nopad">
-                                <label class="label-default">Linha do Tempo</label>
-                                <div id=car_linechart>
-                                    Gráfico de linha
-                                </div>
-                            </div>
+                <div class="col-md-6 nopad">
+                        <div class="col-md-9 nopad">
+                            <label class="label-default">Informações do Arquivo</label>
+                        </div>    
+                        <div class="box-infos">
+                            {% for key, value in videoinfo.items() %}
+                                {{ key[2:] }}: {{value}}<br/>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-9 nopad">
+                            <label class="label-default">Tráfego de Veículos</label>
+                        </div>
+                        <table id=table-trafego>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Médio</th>
+                                    <th>Pico</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Leves</td>
+                                    <td>{{ countinginfo["media"][0] }}/minuto</td>
+                                    <td>{{ countinginfo["pico"][0] }}/minuto</td>
+                                </tr>
+                                <tr>
+                                    <td>Passeio</td>
+                                    <td>{{ countinginfo["media"][1] }}/minuto</td>
+                                    <td>{{ countinginfo["pico"][1] }}/minuto</td>
+                                </tr>
+                                <tr>
+                                    <td>Pesados</td>
+                                    <td>{{ countinginfo["media"][2] }}/minuto</td>
+                                    <td>{{ countinginfo["pico"][2] }}/minuto</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="col-md-9 nopad">
+                            <label class="label-default">Linha do Tempo</label>
+                        </div>
                     </div>
 
                 <div id=car_barchart>
