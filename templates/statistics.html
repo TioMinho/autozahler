@@ -15,7 +15,7 @@
                 <div id="box-video" class="background-striped">
                     <div id="video-content">
 							<video width="100%" height="100%" controls autoplay>
-									<source src="{{ videopath }}video_counted" type="video/mp4">
+									<source src="{{ videopath }}video_counted.mp4" type="video/mp4">
 								  Your browser does not support the video tag.
 							</video>
 					</div>
@@ -42,12 +42,9 @@
                             <label class="label-default">Informações do Arquivo</label>
                         </div>    
                         <div class="box-infos">
-                            Nome: Meuarquivodevideoparaanalise<br/>
-                            Formato: AVI<br/>
-                            Duração: 10m48s<br/>
-                            Resolução: 352 x 288 pixels<br/>
-                            Profundidade de cores: 8 bits<br/>
-                            Taxa de Quadros: 30 FPS
+                            {% for key, value in videoinfo.items() %}
+                                {{ key[2:] }}: {{value}}<br/>
+                            {% endfor %}
                         </div>
                         <div class="col-md-9 nopad">
                             <label class="label-default">Tráfego de Veículos</label>
@@ -63,18 +60,18 @@
                             <tbody>
                                 <tr>
                                     <td>Leves</td>
-                                    <td>2.96/minuto</td>
-                                    <td>2.96/minuto</td>
+                                    <td>{{ countinginfo["media"][0] }}/minuto</td>
+                                    <td>{{ countinginfo["pico"][0] }}/minuto</td>
                                 </tr>
                                 <tr>
                                     <td>Passeio</td>
-                                    <td>2.96/minuto</td>
-                                    <td>2.96/minuto</td>
+                                    <td>{{ countinginfo["media"][1] }}/minuto</td>
+                                    <td>{{ countinginfo["pico"][1] }}/minuto</td>
                                 </tr>
                                 <tr>
                                     <td>Pesados</td>
-                                    <td>2.96/minuto</td>
-                                    <td>2.96/minuto</td>
+                                    <td>{{ countinginfo["media"][2] }}/minuto</td>
+                                    <td>{{ countinginfo["pico"][2] }}/minuto</td>
                                 </tr>
                             </tbody>
                         </table>

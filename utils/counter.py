@@ -46,6 +46,10 @@ def preProc (img, maskSize, backgroundSubtractor):
 
 # Função Principal
 def counter(filepath, videoname):
+	# Variáveis para armazenar informações do vídeo e da contagem
+	info = {}
+	counting_info = {"media": [0, 0, 0], "pico": [0, 0, 0]}
+
 	# Variáveis de Contagem
 	cnt_min 	 = {"time": "", "total": 0, "pequeno": 0, "medio": 0, "grande": 0}
 	cnt_min_rows = []
@@ -58,8 +62,12 @@ def counter(filepath, videoname):
 	# Variáveis de Informação do Vídeo
 	img_width = int(video.get(3))
 	img_height = int(video.get(4))
+	info["3_Resolução"] = "{0} x {1}".format(img_width, img_height)
 
-	fps = int(video.get(5))
+	fps 		= int(video.get(5))
+	duration 	= int(video.get(7) / video.get(5))
+	info["5_Taxa de Quadros"] = "{0} FPS".format(fps)
+	info["4_Duração"] = "{0}:{1}".format(duration // 60, duration % 60)
 
 	frameArea = img_height*img_width
 	areaTH = frameArea / 175
@@ -110,10 +118,15 @@ def counter(filepath, videoname):
 	########################
 	## CONTAGEM POR FRAME ##
 	########################
-	while(video.isOpened()):
+	# while(video.isOpened()):
+	for i in range(0, 1000):
 		# Obtém um frame do arquivo de vídeo
 		ret, frame = video.read()
 		
+		# Calcula a taxa de profundidades de bits, se ela ainda não tiver sido calculada
+		if("6_Profundidade de Cores" not in info):
+			info["6_Profundidade de Cores"] = "{0} bits/canal".format(int(np.log2(frame.max()+1)))
+
 		# Verifica se o frame em questão é o último do vídeo
 		if not ret:
 			break;
@@ -243,21 +256,15 @@ def counter(filepath, videoname):
 
 		frame = cv2.line(gray_image, (line_center, 0), (line_center, img_height), (255, 0, 0), 2)
 
-		# cv2.putText(frame, str_up, (10,30),font,1,(255,255,255),2,cv2.LINE_AA)
-		# cv2.putText(frame, str_up, (10,30),font,1,(0,0,255),1,cv2.LINE_AA)
-		# cv2.putText(frame, str_down, (10,55),font,1,(255,255,255),2,cv2.LINE_AA)
-		# cv2.putText(frame, str_down, (10,55),font,1,(0,0,255),1,cv2.LINE_AA)
-		# cv2.putText(frame, str_medio, (10,80),font,1,(255,255,255),2,cv2.LINE_AA)
-		# cv2.putText(frame, str_medio, (10,80),font,1,(0,0,255),1,cv2.LINE_AA)
-		# cv2.putText(frame, str_grande, (10,105),font,1,(255,255,255),2,cv2.LINE_AA)
-		# cv2.putText(frame, str_grande, (10,105),font,1,(0,0,255),1,cv2.LINE_AA)
-
 		# Salva a imagem em um arquivo
 		if(frame_time % 30 == 0 and frame_time != lastTime):
 			lastTime = frame_time
 
 			cnt_min["time"] = "{0:02d}:{1:02d}".format(frame_time // 60, frame_time % 60)
 			cnt_min_rows.append(cnt_min)
+
+			for i, d in enumerate(["pequeno", "medio", "grande"]):
+				counting_info["pico"][i] = max(counting_info["pico"][i], cnt_min[d])
 
 			cnt_min = {"total": 0, "pequeno": 0, "medio": 0, "grande": 0}
 
@@ -278,3 +285,9 @@ def counter(filepath, videoname):
 	countingData = {"total": cnt_total, "timeseries": cnt_min_rows}
 	with open(filepath + 'counting.json', 'w') as fp:
 		json.dump(countingData, fp, indent=4)
+
+	# Cria o Dicionário com Informações de Contagem
+	for i,d in enumerate(["pequeno", "medio", "grande"]):
+		counting_info["media"][i] = round(cnt_total[d] / (duration // 60), 2)
+
+	return (info, counting_info)
