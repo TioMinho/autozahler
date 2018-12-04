@@ -102,7 +102,6 @@ body {
 
 .nopad {
 	padding-left: 0px !important;
-	float: left !important;
 }
 
 .nopadr {
@@ -221,8 +220,4 @@ body {
 	width: auto;
 	height: auto;
 	max-width: 100%;
-}
-
-#gambiarra {
-	float: left
 }
