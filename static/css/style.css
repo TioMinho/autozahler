@@ -251,7 +251,7 @@ body {
 }
 
 .grid line {
-  	stroke: grey;
+  	stroke: white;
  	stroke-opacity: 0.7;
   	shape-rendering: crispEdges;
 }
@@ -259,10 +259,6 @@ body {
 .grid path {
 	stroke: grey;
   	stroke-width: 0;
-}
-
-text {
-	color: grey;
 }
 
 .axis path,
@@ -275,4 +271,12 @@ text {
 
 .tick {
   	opacity: 0.5;
+}
+
+text {
+	font-family: 'CaviarDreams';
+	stroke: gray;
+	stroke-width: 1;
+	stroke-opacity: 0.7;
+  	shape-rendering: crispEdges;
 }

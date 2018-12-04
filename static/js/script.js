@@ -1,9 +1,9 @@
 // Função para gerar um gráfico de linhas
 function lineChart(data, panel) {
 	// set the dimensions and margins of the graph
-	var margin = {top: 40, right: 10, bottom: 40, left: 25},
+	var margin = {top: 30, right: 20, bottom: 20, left: 45},
 	    width = $(panel).width() - margin.left - margin.right,
-	    height = 300 - margin.top - margin.bottom;
+	    height = 250 - margin.top - margin.bottom;
 
 	// parse the date / time
 	var parseTime = d3.timeParse("%M:%S");
@@ -46,6 +46,13 @@ function lineChart(data, panel) {
 	// Scale the range of the data
 	x.domain(d3.extent(data, function(d) { return d.time; }));
 	y.domain([0, d3.max(data, function(d) { return Math.max(d.pequeno, d.medio); })]);
+
+	svg.append("rect")
+		.attr("x", 0)
+		.attr("y", 0)
+		.attr("width", width)
+		.attr("height", height)
+		.attr("fill", "#e5e5e5ee")
 
 	// Add the valueline path.
 	svg.append("path")
@@ -95,28 +102,26 @@ function lineChart(data, panel) {
 						 .range(["#00aedb", "#d11141", "#00b159"])
 
 	var legend = svg.append("g")
-				.attr("class", "legend")
-				.style("margin", "5px 5px 5px 5px")
-				.style("background-color", "#222222FF")
-				.attr("font-family", "Roboto")
-				.attr("font-size", 11)
-				.attr("text-anchor", "left")
+					.attr("class", "legend")
+					.attr("font-family", "CaviarDreams")
+					.attr("font-size", 12)
+					.attr("text-anchor", "left")
 				.selectAll("g")
-				.data(["Veículo Leve", "Veículo de Passeio", "Veículo Pesado"])
-				.enter().append("g")
-				.attr("transform", function(d, i) { return "translate(0," + i * 25 + ")"; });
+					.data(["Veículo Leve", "Veículo de Passeio", "Veículo Pesado"])
+					.enter().append("g")
+					.attr("transform", function(d, i) { return "translate(" + i * 150 + ", 0)"; });
 
 	legend.append("circle")
-		.attr("cx", width - 135)
-		.attr("cy", 9)
+		.attr("cx", 25)
+		.attr("cy", -15)
 		.attr("r", 7)
 		.attr("fill", legendColorScale);
 
 	legend.append("text")
-		.attr("font-family", "Roboto")
+		.attr("font-family", "CaviarDreams")
 		.attr("font-size", 12)
-		.attr("x", width - 125)
-		.attr("y", 9.5)
+		.attr("x", 35)
+		.attr("y", -15)
 		.attr("dy", "0.32em")
 		.text(function(d) { return d; });
 
@@ -145,9 +150,9 @@ function lineChart(data, panel) {
 function barChart(dataset, panel) {
 
 	// Variáveis Gerais
-	var margin = {top: 20, right: 10, bottom: 40, left: 10},
+	var margin = {top: 20, right: 5, bottom: 60, left: 5},
 	    w = $(panel).width() - margin.left - margin.right,
-	    h = 250 - margin.top - margin.bottom;
+	    h = 275 - margin.top - margin.bottom;
 
 	var label = dataset[0]
 	var dataset = dataset[1]
@@ -200,7 +205,7 @@ function barChart(dataset, panel) {
 			.text(function(d) { return Number((d).toPrecision(4)) } );
 
  	// Declara e posiciona os marcadores do gráfico barChart
-	var barChart = svg.selectAll()
+	var barChart = svg.selectAll("rect")
 					.data(dataset)
 					  .enter()
 					  .append("rect")
@@ -228,11 +233,12 @@ function barChart(dataset, panel) {
 					  })
 	
 	// Título do Gráfico e nome dos eixos
-	svg.append("g").attr("transform", "translate(0," + h + ")")
-					.call(xAxis)
-					.selectAll("text")  
-						.style("text-anchor", "middle")
-						.attr("font-family", "Roboto")
-						.attr("font-size", "18px")
+	svg.selectAll("div")
+		.data(dataset)
+		  .enter()
+		  .append("div")
+		  .style("height", "25px")
+		  .style("background-size", "cover")
+		  .style("background-image", function(d,i) { return "url('/static/assets/upIcon.png')" })
 
 }
