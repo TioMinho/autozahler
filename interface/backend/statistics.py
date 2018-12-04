@@ -10,7 +10,7 @@ def page():
 	video_info["5_Taxa de Quadros"] = "aaaa"
 	video_info["6_Profundidade de Cores"] = "aaaa"
 
-	counting_info = {"media": [0, 0, 0], "pico": [0, 0, 0]}
+	counting_info = {"media": [0, 0, 0], "pico": [0, 0, 0], "results": [12, 7, 15]}
 
 	# Renderiza o template da página 'statistics.html' passando essas informações
 	return render_template('statistics.html', 

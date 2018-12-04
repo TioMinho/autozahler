@@ -1,9 +1,9 @@
 // Função para gerar um gráfico de linhas
 function lineChart(data, panel) {
 	// set the dimensions and margins of the graph
-	var margin = {top: 40, right: 10, bottom: 40, left: 10},
+	var margin = {top: 40, right: 10, bottom: 40, left: 25},
 	    width = $(panel).width() - margin.left - margin.right,
-	    height = 250 - margin.top - margin.bottom;
+	    height = 300 - margin.top - margin.bottom;
 
 	// parse the date / time
 	var parseTime = d3.timeParse("%M:%S");
@@ -14,18 +14,18 @@ function lineChart(data, panel) {
 
 	// define the 1st line
 	var valueline = d3.line()
-	    .x(function(d) { return x(d.date); })
-	    .y(function(d) { return y(d.close); });
+	    .x(function(d) { return x(d.time); })
+	    .y(function(d) { return y(d.pequeno); });
 
 	// define the 2nd line
 	var valueline2 = d3.line()
-	    .x(function(d) { return x(d.date); })
-	    .y(function(d) { return y(d.open); });
+	    .x(function(d) { return x(d.time); })
+	    .y(function(d) { return y(d.medio); });
 
 	// define the 3nd line
 	var valueline3 = d3.line()
-	    .x(function(d) { return x(d.date); })
-	    .y(function(d) { return y(d.terc); });
+	    .x(function(d) { return x(d.time); })
+	    .y(function(d) { return y(d.grande); });
 
 	// append the svg obgect to the body of the page
 	var svg = d3.select(panel).append("svg")
@@ -37,15 +37,15 @@ function lineChart(data, panel) {
 
 	// format the data
 	data.forEach(function(d) {
-	  d.date = parseTime(d.date);
-	  d.close = +d.close;
-	  d.open = +d.open;
-	  d.terc = +d.terc;
+	  d.time 	= parseTime(d.time);
+	  d.pequeno = +d.pequeno;
+	  d.medio 	= +d.medio;
+	  d.grande 	= +d.grande;
 	});
 
 	// Scale the range of the data
-	x.domain(d3.extent(data, function(d) { return d.date; }));
-	y.domain([0, d3.max(data, function(d) { return Math.max(d.close, d.open); })]);
+	x.domain(d3.extent(data, function(d) { return d.time; }));
+	y.domain([0, d3.max(data, function(d) { return Math.max(d.pequeno, d.medio); })]);
 
 	// Add the valueline path.
 	svg.append("path")
@@ -99,7 +99,7 @@ function lineChart(data, panel) {
 				.style("margin", "5px 5px 5px 5px")
 				.style("background-color", "#222222FF")
 				.attr("font-family", "Roboto")
-				.attr("font-size", 12)
+				.attr("font-size", 11)
 				.attr("text-anchor", "left")
 				.selectAll("g")
 				.data(["Veículo Leve", "Veículo de Passeio", "Veículo Pesado"])
@@ -107,9 +107,9 @@ function lineChart(data, panel) {
 				.attr("transform", function(d, i) { return "translate(0," + i * 25 + ")"; });
 
 	legend.append("circle")
-		.attr("cx", width - 145)
-		.attr("cy", 10)
-		.attr("r", 10)
+		.attr("cx", width - 135)
+		.attr("cy", 9)
+		.attr("r", 7)
 		.attr("fill", legendColorScale);
 
 	legend.append("text")
@@ -145,14 +145,12 @@ function lineChart(data, panel) {
 function barChart(dataset, panel) {
 
 	// Variáveis Gerais
-	var margin = {top: 60, right: 10, bottom: 40, left: 10},
+	var margin = {top: 20, right: 10, bottom: 40, left: 10},
 	    w = $(panel).width() - margin.left - margin.right,
 	    h = 250 - margin.top - margin.bottom;
 
 	var label = dataset[0]
 	var dataset = dataset[1]
-
-	console.log(d3.max(dataset)+2)
 
 	// Declaração das Funções de Escala
 	var xLinScale = d3.scaleLinear()
@@ -191,7 +189,7 @@ function barChart(dataset, panel) {
 		.data(dataset)
 		.enter()
 			.append("text")
-			.attr("id", function(d,i) { console.log(i); return "" + label[i].replace(/ /g, "_")  + "_" + Math.floor(+d) })
+			.attr("id", function(d,i) { return "" + label[i].replace(/ /g, "_")  + "_" + Math.floor(+d) })
 			.attr("transform", function(d,i) {
 				return "translate(" + (xScale(label[i])+xScale.bandwidth()/2) + "," + (yScale(+d)-10) + ")"
 			})

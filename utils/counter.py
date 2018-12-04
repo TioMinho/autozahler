@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from .vehicle import Vehicle
 import time
-import json
+import csv
 
 def preProc (img, maskSize, backgroundSubtractor):
 	"""
@@ -118,8 +118,7 @@ def counter(filepath, videoname):
 	########################
 	## CONTAGEM POR FRAME ##
 	########################
-	# while(video.isOpened()):
-	for i in range(0, 1000):
+	while(video.isOpened()):
 		# Obtém um frame do arquivo de vídeo
 		ret, frame = video.read()
 		
@@ -260,8 +259,8 @@ def counter(filepath, videoname):
 		if(frame_time % 30 == 0 and frame_time != lastTime):
 			lastTime = frame_time
 
-			cnt_min["time"] = "{0:02d}:{1:02d}".format(frame_time // 60, frame_time % 60)
-			cnt_min_rows.append(cnt_min)
+			actualTime = "{0:02d}:{1:02d}".format(frame_time // 60, frame_time % 60)
+			cnt_min_rows.append([actualTime, cnt_min["pequeno"], cnt_min["medio"], cnt_min["grande"]])
 
 			for i, d in enumerate(["pequeno", "medio", "grande"]):
 				counting_info["pico"][i] = max(counting_info["pico"][i], cnt_min[d])
@@ -282,12 +281,16 @@ def counter(filepath, videoname):
 	print("Pequenos: {0}".format(cnt_total["pequeno"]))
 
 	# Salva os dados de contagem 
-	countingData = {"total": cnt_total, "timeseries": cnt_min_rows}
-	with open(filepath + 'counting.json', 'w') as fp:
-		json.dump(countingData, fp, indent=4)
+	with open(filepath + 'counting.csv', 'w', newline='') as fp:
+		csv.writer(fp, lineterminator='\n').writerow(["time", "pequeno", "medio", "grande"])
+		csv.writer(fp, lineterminator='\n').writerows(cnt_min_rows)
 
 	# Cria o Dicionário com Informações de Contagem
+	counting_info["results"] = [cnt_total["pequeno"], cnt_total["medio"], cnt_total["grande"]]
 	for i,d in enumerate(["pequeno", "medio", "grande"]):
 		counting_info["media"][i] = round(cnt_total[d] / (duration // 60), 2)
 
 	return (info, counting_info)
+
+if __name__ == "__main__":
+	counter("../static/data/01/", "video.avi")
