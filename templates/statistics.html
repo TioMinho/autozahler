@@ -5,13 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Autozähler | Analysis</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" type="text/css" media="screen" href="../static/css/style.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css" />
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="/static/js/script.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="row">
             <div class="col-md-6 nopad">
-                <img id=logo_auto src="../static/assets/logo_autozahler_statistics.png"/>
+                <img id=logo_auto src="/static/assets/logo_autozahler_statistics.png"/>
                 <div id="box-video" class="background-striped">
                     <div id="video-content">
 							<video width="100%" height="100%" controls autoplay>
@@ -81,18 +85,6 @@
                                 </tr>
                             </tbody>
                         </table>
-
-                        <!-- <div class="col-md-12 nopad">
-                            <label class="label-default">Linha do Tempo</label>
-                            <div id=car_linechart>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                                quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                                consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                                cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                            </div>
-                        </div> -->
                     </div>
 
                     <div class="col-md-6 nopad" id=barra>
@@ -115,6 +107,26 @@
                             
                 </div>
             </div>  
+                        </div>
+                    </div>
+
+                <div class="col-md-6 nopad">
+                    <div class="col-md-9 nopad">
+                        <label class="label-default">Contagem</label>
+                    </div>
+                    <div class="box-infos" id="car_barchart"></div>
+                </div>
+            </div>
+        </div>  
     </div>
+
+    <script type="text/javascript">
+        d3.csv("/static/data/data2.csv", function(data) {
+            lineChart(data, "#car_linechart")
+        })
+
+        barChart([["Leves", "Passeio", "Pesados"], [10, 20, 30]], "#car_barchart")
+    </script>
+
 </body>
 </html>
