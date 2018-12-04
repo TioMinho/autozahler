@@ -48,6 +48,17 @@ body {
 	clip-path: polygon(0 0, 90% 0, 100% 100%, 0% 100%);
 }
 
+.label-default-timeline {
+	margin:5px 0px;
+	color: #0f6c98;
+	font-weight: bold;
+	font-size: 0.8em;
+	background-color: #EDEDED;
+	width: 100%;
+	padding: 5px 20px 2px 10px;
+	clip-path: polygon(0 0, 30% 0, 33% 100%, 0% 100%);
+}
+
 .background-striped {
 	background: repeating-linear-gradient(
 	-45deg,
