@@ -5,44 +5,50 @@ from .vehicle import Vehicle
 import time
 import csv
 
-def preProc (img, maskSize, backgroundSubtractor):
-	"""
-	Parametros da Função
-	Img:                  Imagem em escala de cinza
-	maskSize:             Tamanho(IMPAR) da mascara para filtro da mediana e rolagem
-	backgroundSubtractor: cv2.createBackgroundSubtractorMOG2()
-	"""
-	
-	#Equalização de Histograma
-	img = cv2.equalizeHist(img)
-	
-	# Remoção de Fundo
-	img = backgroundSubtractor.apply(img)
-	
-	# Filtro Limiar Com Binarização
-	img = np.uint8(img*255)
-	_,th = cv2.threshold(img, 127, 255, cv2.THRESH_TOZERO)
-
-	# Remove Ruido aleatorio
-	for i in range(1,maskSize):
-		img = img*np.roll(th, i, axis=1)
-
-	# Filtro da media para religar contours desconectados
-	img = cv2.GaussianBlur(th, (maskSize, maskSize), 0) 
-
-	# Filtro da mediana
-	img = cv2.medianBlur(img, maskSize)
-	
-	# Binariza a Imagem Final
-	_,th = cv2.threshold(img,45,255,cv2.THRESH_BINARY)
-	img = th
-	
-	# Preenchimento de Falhas
-	for i in range(1,maskSize):
-		img = np.clip(img+np.roll(th,-i,axis=0),0,255)
-
-	# Retorna o Frame
-	return np.uint8(img)
+def preProc (img, ant, maskSize, backgroundSubtractor):
+    """
+    Parametros da Função
+    Img:                  Imagem em escala de cinza
+    Ant:                  Frame Anterior
+    maskSize:             Tamanho(IMPAR) da mascara para filtro da mediana e rolagem
+    backgroundSubtractor: cv2.createBackgroundSubtractorMOG2()
+    """
+    #Equalização de Histograma
+    img = cv2.equalizeHist(img)
+    
+    # Remoção de Fundo
+    img = backgroundSubtractor.apply(img)
+    
+    # Corte de Tons de Cinza maiores que 127
+    # th = (img * (img < 128))/127
+    _,th = cv2.threshold(img,45,255,cv2.THRESH_BINARY)
+    
+    # Remove Ruido aleatorio
+    if ant.max() == 999:
+        dimX = np.logical_and(np.roll(th,1,axis=1),np.roll(th,2,axis=1),np.roll(th,3,axis=1))
+        dimY = np.logical_and(np.roll(th,1,axis=0),np.roll(th,2,axis=0),np.roll(th,3,axis=0))
+        img1 = np.logical_and(th, dimX, dimY)
+    else:
+        ant[:,122] = 1
+        o1 = np.logical_or(np.roll(ant,1,axis=1),np.roll(ant,2,axis=1),np.roll(ant,3,axis=1))
+        o2 = np.logical_or(np.roll(ant,4,axis=1),np.roll(ant,5,axis=1),np.roll(ant,6,axis=1))
+        o3 = np.logical_or(np.roll(ant,7,axis=1),np.roll(ant,8,axis=1),np.roll(ant,9,axis=1))
+        img1 = np.logical_and(th, np.logical_or(np.logical_or(o1,o2,o3),np.logical_or(np.roll(ant,1,axis=0),np.roll(ant,2,axis=0),np.roll(ant,3,axis=0))))
+    
+    # Preenchimento de Falhas
+    th = img1
+    o1 = np.logical_or(np.roll(th,1,axis=1),np.roll(th,2,axis=1),np.roll(th,3,axis=1))
+    o2 = np.logical_or(np.roll(th,4,axis=1),np.roll(th,5,axis=1),np.roll(th,6,axis=1))
+    o3 = np.logical_or(np.roll(th,7,axis=1),np.roll(th,8,axis=1),np.roll(th,9,axis=1))
+    img = np.logical_and(1 - th, np.logical_or(o1,o2,o3))
+    img = np.logical_or(img, img1)    
+    img = np.uint8(img*255)    
+    
+    # Filtro da mediana
+    img = cv2.medianBlur(img,maskSize)
+    
+    # Retorna o Frame
+    return np.uint8(img)
 
 # Função Principal
 def counter(filepath, videoname):
@@ -97,8 +103,8 @@ def counter(filepath, videoname):
 	print()
 
 	# Define o Codec e Objeto de Escrita de Vídeo
-	fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-	out = cv2.VideoWriter(filepath + 'video_counted.mp4', fourcc, 30.0, (img_width, img_height), 0)
+	fourcc = cv2.VideoWriter_fourcc(*'VP80')
+	out = cv2.VideoWriter(filepath + 'video_counted.webm', fourcc, 30.0, (img_width, img_height), 0)
 
 	# Cria o objeto do extrator de fundo
 	rfmg2 = cv2.createBackgroundSubtractorMOG2()
@@ -118,6 +124,9 @@ def counter(filepath, videoname):
 	########################
 	## CONTAGEM POR FRAME ##
 	########################
+	(_, frame) = video.read()
+	mask = np.ones(frame.shape[0:2])*999
+
 	while(video.isOpened()):
 		# Obtém um frame do arquivo de vídeo
 		ret, frame = video.read()
@@ -139,7 +148,7 @@ def counter(filepath, videoname):
 		###################
 		# Converte a imagem para preto e branco e realiza pré-processamento
 		gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		mask = preProc(gray_image, 11, rfmg2)
+		mask = preProc(gray_image, mask, 11, rfmg2)
 		
 		##################
 		## FIND CONTOUR ##
@@ -174,44 +183,38 @@ def counter(filepath, videoname):
 					if abs(x - i.x) <= w and abs(y - i.y) <= h:
 						new = False
 
-						# if(cx <= i.x):
-						# 	i.state = '1'
-
 						# Atualizamos as coordenadas do objeto com base nas coordenadas do Contour
-						i.updateCoords(cx, cy)
+						i.updateCoords(cx, cy, w, h)
 						
 						# Verificamos se o objeto cruzou a linha, e então incluimos na contagem adequada
-						if i.crossed_line(line_center, line_center+10):
-							if(w >= 95):
-								if(h >= 60):
-									print("{2} - CARRO GRANDE | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
+						if i.crossed_line(line_center, line_down):
+							size = i.getSize()
+							if(size[0] >= 95 or size[1] >= 70):
+								if(size[1] >= 65):
+									print("{2} - CARRO GRANDE | MEDIA: {0} | ALTURA: {1} | LARGURA: {3}".format(size[0], h, frame_id, i.w))
 									cnt_total["grande"] += 1
 									cnt_min["grande"] += 1
 
 								else:
-									print("{2} - CARRO MEDIO* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
-									print("{2} - CARRO MEDIO* | LARGURA: {0} | ALTURA: {1}".format(w/2, h, frame_id))
+									print("{2} - CARRO MEDIO* | MEDIA: {0} | ALTURA: {1} | LARGURA: {3}".format(size[0]/2, h, frame_id, i.w))
+									print("{2} - CARRO MEDIO* | MEDIA: {0} | ALTURA: {1} | LARGURA: {3}".format(size[0]/2, h, frame_id, i.w))
 									cnt_total["medio"] += 2
 									cnt_total["total"] += 1
 
 									cnt_min["medio"] += 2
 									cnt_min["total"] += 1
 									
-							elif(w >= 50):
-								print("{2} - CARRO MEDIO | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
+							elif(size[0] >= 55):
+								print("{2} - CARRO MEDIO | MEDIA: {0} | ALTURA: {1} | LARGURA: {3}".format(size[0], h, frame_id, i.w))
 								cnt_total["medio"] += 1
 								cnt_min["medio"] += 1
 
-							elif(w >= 20):
-								print("{2} - MOTINHA | LARGURA: {0} | ALTURA: {1}".format(w, h, frame_id))
+							elif(size[0] >= 20):
+								print("{2} - MOTINHA | MEDIA: {0} | ALTURA: {1} | LARGURA: {3}".format(size[0], h, frame_id, i.w))
 								cnt_total["pequeno"] += 1
 								cnt_min["pequeno"] += 1
 
-							if(w >= 20):
-								roi = gray_image[y:y+h, x:x+w]
-
-								cv2.imwrite("utils/tmp/roi_"+str(frame_id)+".png", roi)
-
+							if(size[0] >= 20):
 								cnt_total["total"] += 1
 								cnt_min["total"] += 1
 						break
@@ -227,7 +230,7 @@ def counter(filepath, videoname):
 				# Se nenhum objeto de Vehicle foi encontrado no passo anterior, criamos um novo objeto para
 				# mantermos esse novo contour em observação.
 				if new == True and cx >= line_left and cx <= line_right and cy <= line_down and cy >= line_up:
-					p = Vehicle(pid, cx, cy, max_p_age)
+					p = Vehicle(pid, cx, cy, w, h, max_p_age)
 					vehicles.append(p)
 					pid += 1
 
@@ -241,12 +244,6 @@ def counter(filepath, videoname):
 		###############
 		##   IMAGE   ##
 		###############
-		# Imprimimos um texto na imagem de exibição para mostrar a contagem em tempo-real
-		str_up 		= 'total: ' + str(cnt_total["total"])
-		str_down 	= 'pequeno:' + str(cnt_total["pequeno"])
-		str_medio 	= 'medio:' + str(cnt_total["medio"])
-		str_grande 	= 'grande:' + str(cnt_total["grande"])
-		
 		# Incluimos algumas linhas de limites para analisar o vídeo
 		frame = cv2.line(gray_image, (line_right, 0), (line_right, img_height), (255, 0, 0), 1)
 		frame = cv2.line(gray_image, (line_left, 0), (line_left, img_height), (255, 0, 0), 1)
@@ -254,6 +251,9 @@ def counter(filepath, videoname):
 		frame = cv2.line(gray_image, (0, line_down), (img_width, line_down), (255, 0, 0), 1)
 
 		frame = cv2.line(gray_image, (line_center, 0), (line_center, img_height), (255, 0, 0), 2)
+
+		# Exibimos o frame atual da contagem na janela
+		# cv2.imshow('Frame', cv2.resize(gray_image, (400, 300)))
 
 		# Salva a imagem em um arquivo
 		if(frame_time % 30 == 0 and frame_time != lastTime):
@@ -268,6 +268,11 @@ def counter(filepath, videoname):
 			cnt_min = {"total": 0, "pequeno": 0, "medio": 0, "grande": 0}
 
 		out.write(gray_image)
+
+		# Pausa e Verificação da Tecla de Saída (ESC ou Q)
+		k = cv2.waitKey(1) & 0xff
+		if k == 27:
+			break
 
 	# Finalização do Processo de Renderização
 	video.release()
