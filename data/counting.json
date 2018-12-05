@@ -1,9 +1,9 @@
 {
     "total": {
-        "total": 5,
+        "total": 1,
         "pequeno": 0,
-        "medio": 5,
-        "grande": 0
+        "medio": 0,
+        "grande": 1
     },
     "timeseries": [
         {
