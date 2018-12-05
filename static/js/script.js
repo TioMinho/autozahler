@@ -150,9 +150,9 @@ function lineChart(data, panel) {
 function barChart(dataset, panel) {
 
 	// Variáveis Gerais
-	var margin = {top: 20, right: 5, bottom: 60, left: 5},
+	var margin = {top: 20, right: 5, bottom: 20, left: 5},
 	    w = $(panel).width() - margin.left - margin.right,
-	    h = 275 - margin.top - margin.bottom;
+	    h = 245 - margin.top - margin.bottom;
 
 	var label = dataset[0]
 	var dataset = dataset[1]
@@ -233,12 +233,16 @@ function barChart(dataset, panel) {
 					  })
 	
 	// Título do Gráfico e nome dos eixos
-	svg.selectAll("div")
+	d3.select(panel).selectAll("div.chart_icon")
 		.data(dataset)
 		  .enter()
 		  .append("div")
-		  .style("height", "25px")
-		  .style("background-size", "cover")
-		  .style("background-image", function(d,i) { return "url('/static/assets/upIcon.png')" })
+			  .attr("class", "chart_icon")
+			  .style("background-size", "cover")
+			  .style("background-image", function(d,i) { return "url('/static/assets/icons/"+(i+1)+".png')" })
+			  .style("left", function(d, i) { return ""+(xScale(label[i]) + xScale.bandwidth() / 2) - 15+"px" })
+			  .style("top", ""+(height-margin.bottom)+"px")
+			  .style("width", "50 px")
+			  .style("height", "50 px")
 
 }

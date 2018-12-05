@@ -5,20 +5,22 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>Autozähler | Home</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
 	<link rel="stylesheet" type="text/css" media="screen" href="../static/css/style.css"/>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
+
 <body>
 	<div class="background-striped">
 		<div class="row">
 			<div class="col-md-5 upload-content">
 					<img src="../static/assets/logo_autozahler_index.png">
 					<!-- <img src="../static/assets/upIcon.png" width="250px""> -->
-					<form method=post enctype=multipart/form-data>
+					<form id="form_input" method=post enctype=multipart/form-data>
 						<div style="text-align: center">
-							<input type="image" name="submit" src="../static/assets/upIcon.png" width="250px">
+							<input type="image" id="btn_submit" name="submit" src="../static/assets/upIcon.png" width="250px">
 							<input class="inputfile" type=file id="file" name=file>
-							<label for="file">Selecionar um vídeo...</label>
-							<label class="label-status-upload">Progresso de upload</label>
+							<label for="file" id="file_input_label">Selecionar um vídeo...</label>
 						</div>	
 					</form>
 			</div>
@@ -126,5 +128,16 @@
 			</div>
 		</div>
 	</div>
+
+	<script type="text/javascript">
+		$("#file").on("change", function() { 
+			$("#file_input_label").text(""+$(this).val().split('\\').pop())
+		})
+
+		// Essa função de baixo não está mudando as coisas antes do submit ser efetivado
+		// $("#form_input").on("submit", function () {
+		// });
+	</script>
+
 </body>
 </html>

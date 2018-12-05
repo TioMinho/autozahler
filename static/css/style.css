@@ -103,6 +103,7 @@ body {
 	overflow: hidden;
 	position: absolute;
 	z-index: -1;
+	cursor: pointer;
 }
 
 .inputfile + label {
@@ -113,6 +114,7 @@ body {
 	color: #767877;
 	background-color: #ffffff;
 	display: inline-block;
+	cursor: pointer;
 }
 
 .nopad {
@@ -290,4 +292,10 @@ text {
 	stroke-width: 1;
 	stroke-opacity: 0.7;
   	shape-rendering: crispEdges;
+}
+
+.chart_icon {
+	position: absolute;
+	min-height: 40px;
+	min-width: 40px;
 }
